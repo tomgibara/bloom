@@ -30,36 +30,34 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 	
 	@Override
 	public void clear() {
-		bits.set(false);
+		bits.clearWithZeros();
 	}
 
 	@Override
 	public boolean addAll(BloomFilter<? extends E> filter) {
 		Bloom.checkCompatible(this, filter);
-		boolean contains = bits.testContains(filter.getBitVector());
+		boolean contains = bits.contains().store(filter.getBits());
 		if (contains) return false;
-		bits.orVector(filter.getBitVector());
+		bits.or().withStore(filter.getBits());
 		return true;
 	}
 	
 	@Override
 	public boolean add(E element) {
 		HashCode hash = hasher.hash(element);
-		boolean mutated = false;
-		for (int i = 0; i < hashCount; i++) {
-			final int code = hash.intValue();
-			if (mutated) {
-				bits.setBit(code, true);
-			} else if (!bits.getBit(code)) {
-				bits.setBit(code, true);
-				mutated = true;
-			}
+		int i = 0;
+		for (; i < hashCount; i++) {
+			if (!bits.getThenSetBit(hash.intValue(), true)) break;
 		}
-		return mutated;
+		if (i == hashCount) return false;
+		for (; i < hashCount; i++) {
+			bits.setBit(hash.intValue(), true);
+		}
+		return true;
 	}
 	
 	@Override
-	public BitVector getBitVector() {
+	public BitVector getBits() {
 		return publicBits;
 	}
 	

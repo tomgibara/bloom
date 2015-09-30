@@ -16,7 +16,7 @@
  */
 package com.tomgibara.bloom;
 
-import com.tomgibara.bits.BitVector;
+import com.tomgibara.bits.BitStore;
 import com.tomgibara.hashing.HashCode;
 import com.tomgibara.hashing.Hasher;
 
@@ -59,10 +59,10 @@ public interface BloomFilter<E> extends Cloneable {
 	
 	default boolean mightContain(E element) {
 		int hashCount = getHashCount();
-		BitVector bitVector = getBitVector();
+		BitStore bitStore = getBits();
 		HashCode hash = getHasher().hash(element);
 		for (int i = 0; i < hashCount; i++) {
-			if (!bitVector.getBit(hash.intValue())) return false;
+			if (!bitStore.getBit(hash.intValue())) return false;
 		}
 		return true;
 	}
@@ -77,7 +77,7 @@ public interface BloomFilter<E> extends Cloneable {
 	 */
 	
 	default double getFalsePositiveProbability() {
-		return Math.pow( (double) getBitVector().countOnes() / getBitVector().size(), getHashCount());
+		return Math.pow( (double) getBits().ones().count() / getBits().size(), getHashCount());
 	}
 
 	/**
@@ -118,7 +118,7 @@ public interface BloomFilter<E> extends Cloneable {
 	 */
 	
 	default boolean isEmpty() {
-		return getBitVector().isAllZeros();
+		return getBits().zeros().isAll();
 	}
 
 	/**
@@ -160,7 +160,7 @@ public interface BloomFilter<E> extends Cloneable {
 	
 	default boolean containsAll(BloomFilter<?> filter) throws IllegalArgumentException {
 		Bloom.checkCompatible(this, filter);
-		return getBitVector().testContains(filter.getBitVector());
+		return getBits().contains().store(filter.getBits());
 	}
 
 	/**
@@ -185,7 +185,7 @@ public interface BloomFilter<E> extends Cloneable {
 	 */
 
 	default int getCapacity() {
-		return getBitVector().size();
+		return getBits().size();
 	}
 
 	/**
@@ -205,15 +205,14 @@ public interface BloomFilter<E> extends Cloneable {
 	Hasher<? super E> getHasher();
 	
 	/**
-	 * The bits of the Bloom filter. The returned {@link BitVector} may be live,
-	 * or may be a snapshot, there's no guarantee. Use {@link BitVector#copy()}
-	 * if you must have a guaranteed static snapshot.
+	 * The bits of the Bloom filter. The returned {@link BitStore} is a live
+	 * view of the filter's state and will mutate as items are added to the
+	 * filter.
 	 * 
-	 * @return a {@link BitVector} that contains the state of the filter, never
-	 *         null
+	 * @return the state of the filter, never null
 	 */
 	
-	BitVector getBitVector();
+	BitStore getBits();
 
 	BloomFilter<E> clone();
 	
