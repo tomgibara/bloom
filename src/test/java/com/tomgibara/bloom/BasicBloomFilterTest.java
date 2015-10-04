@@ -180,4 +180,26 @@ public class BasicBloomFilterTest extends TestCase {
 			if (b.mutableCopy().addAll(vs)) assertFalse(b.mightContainAll(vs));
 		}
 	}
+	
+	public void testBoundedBy() {
+		BloomFilter<Integer> a = Bloom.withHasher(multiHash, 10).newFilter();
+		for (int i = 0; i < 30; i++) {
+			a.add(i);
+		}
+		assertTrue(a.boundedBy(a).bits().ones().isAll());
+		BloomFilter<Integer> b = a.mutableCopy();
+		for (int i = 30; i < 60; i++) {
+			b.add(i);
+		}
+		BloomFilter<Integer> c = a.boundedBy(b);
+		for (int i = 0; i < 60; i++) {
+			assertTrue(c.mightContain(i));
+		}
+		assertTrue(c.bits().ones().isAll());
+		BloomFilter<Integer> d = b.boundedBy(a);
+		for (int i = 0; i < 60; i++) {
+			assertEquals(i < 30, d.mightContain(i));
+		}
+		assertFalse(d.bits().ones().isAll());
+	}
 }

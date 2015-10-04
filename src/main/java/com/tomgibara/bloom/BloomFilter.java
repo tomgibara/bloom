@@ -129,7 +129,9 @@ public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 	 * Removes all elements from the filter.
 	 */
 	
-	void clear();
+	default void clear() {
+		throw new IllegalStateException("immutable");
+	}
 	
 	/**
 	 * Whether the Bloom filter might contain all the elements in the supplied
@@ -182,6 +184,45 @@ public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 		return bits().contains().store(filter.bits());
 	}
 
+	/**
+	 * Returns an immutable {@link BloomFilter} that contains an element if and
+	 * only if the element cannot be present in this filter without also being
+	 * present in the supplied filter. If the returned filter is full, then the
+	 * supplied filter contains all the elements of this filter, that is to say
+	 * <code>containsAll(filter)<code> is true.
+	 * 
+	 * @param filter
+	 *            a compatible Bloom filter
+	 * @return a Bloom filter containing all elements on which the supplied
+	 *         filter bounds this filter
+	 * @throws IllegalArgumentException
+	 *             if the supplied filter is null or not compatible with this
+	 *             filter
+	 */
+
+	default BloomFilter<E> boundedBy(BloomFilter<E> filter) throws IllegalArgumentException {
+		Bloom.checkCompatible(this, filter);
+		BitStore thisBits = this.bits();
+		BitStore thatBits = filter.bits();
+		BitStore bits = new BitStore() {
+			final int size = thisBits.size();
+			@Override public boolean getBit(int index) { return !thisBits.getBit(index) || thatBits.getBit(index); }
+			@Override public int size() { return size; }
+		};
+		return new BloomFilter<E>() {
+
+			@Override
+			public BloomConfig<E> config() {
+				return BloomFilter.this.config();
+			}
+
+			@Override
+			public BitStore bits() {
+				return bits;
+			}
+		};
+	}
+	
 	/**
 	 * Adds all of the elements of a compatible bloom filter.
 	 * 
