@@ -269,10 +269,22 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 
 	private class CompactBloomFilter extends AbstractBloomFilter<K> implements Cloneable {
 
-		final BitStore bits = new CompactBits();
-		final BitStore publicBits = bits.immutableView();
+		final BitStore bits;
+		final BitStore publicBits;
 		//cached values
-		final V top = accessLattice.getTop();
+		final V top;
+		
+		CompactBloomFilter() {
+			bits = new CompactBits();
+			publicBits = bits.immutableView();
+			top = accessLattice.getTop();
+		}
+		
+		CompactBloomFilter(BitStore bits, BitStore publicBits, V top) {
+			this.bits = bits;
+			this.publicBits = publicBits;
+			this.top = top;
+		}
 		
 		@Override
 		public boolean add(K key) {
@@ -317,8 +329,8 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		
 		@Override
 		public BloomFilter<K> clone() {
-			//TODO
-			throw new UnsupportedOperationException();
+			// cannot access object clone here??
+			return new CompactBloomFilter(bits, publicBits, top);
 		}
 		
 	}
