@@ -2,28 +2,25 @@ package com.tomgibara.bloom;
 
 import com.tomgibara.bits.BitVector;
 import com.tomgibara.hashing.HashCode;
-import com.tomgibara.hashing.Hasher;
 
 class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 
 	// fields
 	
-	private final Hasher<? super E> hasher;
-	private final int hashCount;
+	private final BloomConfig<E> config;
 	private final BitVector bits;
 	private final BitVector publicBits;
 	
 	// constructors
 	
-	BasicBloomFilter(BitVector bits, Hasher<? super E> hasher, int hashCount) {
+	BasicBloomFilter(BitVector bits, BloomConfig<E> config) {
+		this.config = config;
 		this.bits = bits;
-		this.hasher = hasher;
-		this.hashCount = hashCount;
 		publicBits = bits.immutableView();
 	}
 	
 	private BasicBloomFilter(BasicBloomFilter<E> that) {
-		this(that.bits.mutableCopy(), that.hasher, that.hashCount);
+		this(that.bits.mutableCopy(), that.config);
 	}
 	
 	// bloom filter methods
@@ -44,7 +41,8 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 	
 	@Override
 	public boolean add(E element) {
-		HashCode hash = hasher.hash(element);
+		HashCode hash = config.hasher().hash(element);
+		int hashCount = config.hashCount();
 		int i = 0;
 		for (; i < hashCount; i++) {
 			if (!bits.getThenSetBit(hash.intValue(), true)) break;
@@ -62,13 +60,8 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 	}
 	
 	@Override
-	public int hashCount() {
-		return hashCount;
-	}
-	
-	@Override
-	public Hasher<? super E> hasher() {
-		return hasher;
+	public BloomConfig<E> config() {
+		return config;
 	}
 	
 	// object methods

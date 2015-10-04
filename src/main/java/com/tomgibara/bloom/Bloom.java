@@ -2,7 +2,6 @@ package com.tomgibara.bloom;
 
 import com.tomgibara.algebra.lattice.Lattice;
 import com.tomgibara.bits.BitVector;
-import com.tomgibara.hashing.HashSize;
 import com.tomgibara.hashing.Hasher;
 import com.tomgibara.storage.Storage;
 import com.tomgibara.storage.Store;
@@ -10,42 +9,46 @@ import com.tomgibara.storage.Store;
 //TODO should allow immutables to wrapped to make immutable structures?
 public final class Bloom<K> {
 
-	private final Hasher<? super K> hasher;
-	private final int hashCount;
-	private final HashSize size;
-	
+	private final BloomConfig<K> config;
+
+	static void checkCompatible(CompactApproximator<?, ?> a, CompactApproximator<?, ?> b) {
+		if (b == null) throw new IllegalArgumentException("null approximator");
+		checkCompatible(a.config(), b.config());
+		if (!a.lattice().equals(b.lattice())) throw new IllegalArgumentException("Incompatible compact approximator, lattices were not equal");
+	}
+
 	static void checkCompatible(BloomFilter<?> a, BloomFilter<?> b) {
 		if (b == null) throw new IllegalArgumentException("null filter");
-		if (a.hashCount() != b.hashCount()) throw new IllegalArgumentException("Incompatible filter, hashCount was " + b.hashCount() +", expected " + a.hashCount());
-		if (!a.hasher().equals(b.hasher())) throw new IllegalArgumentException("Incompatible filter, hashers were not equal");
+		checkCompatible(a.config(), b.config());
+	}
+
+	static void checkCompatible(BloomConfig<?> ac, BloomConfig<?> bc) {
+		if (ac.hashCount() != bc.hashCount()) throw new IllegalArgumentException("Incompatible filter, hashCount was " + bc.hashCount() +", expected " + ac.hashCount());
+		if (!ac.hasher().equals(bc.hasher())) throw new IllegalArgumentException("Incompatible filter, hashers were not equal");
 	}
 
 	public static <K> Bloom<K> withHasher(Hasher<? super K> hasher, int hashCount) {
-		if (hasher == null) throw new IllegalArgumentException("null hasher");
-		if (hashCount < 1) throw new IllegalArgumentException("hashCount not positive");
-		if (hasher.getQuantity() < hashCount) throw new IllegalArgumentException("hashCount exceeds quantity of hashes");
-		return new Bloom<>(hasher, hashCount);
+		return new Bloom<>(new BloomConfig<>(hasher, hashCount));
 	}
 
-	private Bloom(Hasher<? super K> hasher, int hashCount) {
-		this.hasher = hasher;
-		this.hashCount = hashCount;
-		size = hasher.getSize();
+	public static <K> Bloom<K> withConfig(BloomConfig<K> config) {
+		if (config == null) throw new IllegalArgumentException("null config");
+		return new Bloom<>(config);
+	}
+
+	private Bloom(BloomConfig<K> config) {
+		this.config = config;
 	}
 
 	public BloomFilter<K> newFilter(BitVector bits) {
 		if (bits == null) throw new IllegalArgumentException("null bits");
 		if (!bits.isMutable()) throw new IllegalArgumentException("immutable bits");
-		return new BasicBloomFilter<>(bits, sizedHasher(bits.size()), hashCount);
+		return new BasicBloomFilter<>(bits, config.withCapacity(bits.size()));
 	}
 
 	public BloomFilter<K> newFilter() {
-		if (hasher == null) throw new IllegalArgumentException("null hasher");
-		if (hashCount < 1) throw new IllegalArgumentException("hashCount not positive");
-		if (hasher.getQuantity() < hashCount) throw new IllegalArgumentException("hashCount exceeds quantity of hashes");
-		if (!size.isIntSized()) throw new IllegalStateException("hash size too large");
-		BitVector bits = new BitVector(size.asInt());
-		return new BasicBloomFilter<>(bits, hasher, hashCount);
+		BitVector bits = new BitVector(config.capacity());
+		return new BasicBloomFilter<>(bits, config);
 	}
 
 	public <V> CompactApproximator<K, V> newApproximator(Store<V> values, Lattice<V> lattice) {
@@ -53,22 +56,15 @@ public final class Bloom<K> {
 		if (!values.isMutable()) throw new IllegalArgumentException("immutable values");
 		if (lattice == null) throw new IllegalArgumentException("null lattice");
 		if (!lattice.isBoundedBelow()) throw new IllegalArgumentException("lattice not bounded below");
-		return new BasicCompactApproximator<K, V>(values, lattice, hasher, hashCount);
+		return new BasicCompactApproximator<K, V>(config, values, lattice);
 	}
 
 	public <V> CompactApproximator<K, V> newApproximator(Storage<V> storage, Lattice<V> lattice) {
 		if (storage == null) throw new IllegalArgumentException("null storage");
 		if (lattice == null) throw new IllegalArgumentException("null lattice");
 		if (!lattice.isBoundedBelow()) throw new IllegalArgumentException("lattice not bounded below");
-		if (!size.isIntSized()) throw new IllegalStateException("hash size too large");
-		Store<V> values = storage.newStore(size.asInt());
-		return new BasicCompactApproximator<K, V>(values, lattice, hasher, hashCount);
+		Store<V> values = storage.newStore(config.capacity());
+		return new BasicCompactApproximator<K, V>(config, values, lattice);
 	}
 
-	private Hasher<? super K> sizedHasher(int length) {
-		HashSize newSize = HashSize.fromInt(length);
-		int c = size.compareTo(newSize);
-		if (c < 0) throw new IllegalArgumentException("hash size too small");
-		return c > 0 ? hasher.sized(newSize) : hasher;
-	}
 }

@@ -24,13 +24,9 @@ public interface CompactApproximator<K, V> extends Cloneable {
 
 	// accessors
 
-	Lattice<V> lattice();
+	BloomConfig<K> config();
 	
-	int capacity();
-
-	int hashCount();
-
-	Hasher<? super K> hasher();
+	Lattice<V> lattice();
 
 	Store<V> values();
 

@@ -38,16 +38,16 @@ public class BasicBloomFilterTest extends TestCase {
 	public void testConstructorWithoutBitVector() {
 		BloomFilter<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter();
 		assertEquals(0.0, bloom.getFalsePositiveProbability());
-		assertEquals(10, bloom.hashCount());
-		assertEquals(multiHash, bloom.hasher());
+		assertEquals(10, bloom.config().hashCount());
+		assertEquals(multiHash, bloom.config().hasher());
 		assertEquals(true, bloom.isEmpty());
 		assertEquals(DEFAULT_SIZE.asInt(), bloom.bits().size());
 	}
 	
 	public void testConstructorWithBitVector() {
 		BloomFilter<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter(new BitVector(500));
-		assertEquals(500, bloom.capacity());
-		assertEquals(500, bloom.hasher().getSize().asInt());
+		assertEquals(500, bloom.config().capacity());
+		assertEquals(500, bloom.config().hasher().getSize().asInt());
 	}
 	
 	public void testConstructorWithImmutableBitVector() {
@@ -96,7 +96,7 @@ public class BasicBloomFilterTest extends TestCase {
 	
 	public void testCapacity() {
 		BloomFilter<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter();
-		assertEquals(multiHash.getSize().asInt(), bloom.capacity());
+		assertEquals(multiHash.getSize().asInt(), bloom.config().capacity());
 	}
 	
 	public void testEqualsAndHashCode() {

@@ -28,20 +28,18 @@ import com.tomgibara.storage.Store;
 
 class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 
-	private final Hasher<? super K> hasher;
-	private final int hashCount;
+	private BloomConfig<K> config;
 	private final Lattice<V> storeLattice;
 	private final Lattice<V> accessLattice;
 	private final Store<V> values;
 	private final Store<V> accessValues;
 	private CompactBloomFilter bloomFilter = null;
 
-	BasicCompactApproximator(Store<V> values, Lattice<V> lattice, Hasher<? super K> hasher, int hashCount) {
+	BasicCompactApproximator(BloomConfig<K> config, Store<V> values, Lattice<V> lattice) {
+		this.config = config;
 		this.values = values;
 		this.storeLattice = lattice;
 		this.accessLattice = lattice;
-		this.hasher = hasher;
-		this.hashCount = hashCount;
 		accessValues = newAccessStore();
 		clear();
 	}
@@ -49,8 +47,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	private BasicCompactApproximator(BasicCompactApproximator<K, V> that) {
 		storeLattice = that.storeLattice;
 		accessLattice = that.accessLattice;
-		hasher = that.hasher;
-		hashCount = that.hashCount;
+		config = that.config;
 		values = that.values.mutableCopy();
 		accessValues = newAccessStore();
 	}
@@ -58,8 +55,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	private BasicCompactApproximator(BasicCompactApproximator<K, V> that, Lattice<V> accessLattice) {
 		storeLattice = that.storeLattice;
 		this.accessLattice = accessLattice;
-		hasher = that.hasher;
-		hashCount = that.hashCount;
+		config = that.config;
 		values = that.values.mutableCopy();
 		accessValues = newAccessStore();
 	}
@@ -72,7 +68,8 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 
 	public V put(K key, V value) {
 		if (!accessLattice.contains(value)) throw new IllegalArgumentException();
-		HashCode code = hasher.hash(key);
+		HashCode code = config.hasher().hash(key);
+		int hashCount = config.hashCount();
 		V previous = accessLattice.getTop();
 		for (int i = 0; i < hashCount; i++) {
 			final int hash = code.intValue();
@@ -85,7 +82,8 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	}
 	
 	public V getSupremum(K key) {
-		HashCode code = hasher.hash(key);
+		HashCode code = config.hasher().hash(key);
+		int hashCount = config.hashCount();
 		V value = accessLattice.getTop();
 		for (int i = 0; i < hashCount; i++) {
 			final V v = values.get(code.intValue());
@@ -95,7 +93,8 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	}
 
 	public boolean mightContain(K key) {
-		HashCode code = hasher.hash(key);
+		HashCode code = config.hasher().hash(key);
+		int hashCount = config.hashCount();
 		V bottom = storeLattice.getBottom();
 		EquRel<V> equality = storeLattice.equality();
 		for (int i = 0; i < hashCount; i++) {
@@ -126,7 +125,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	
 	@Override
 	public boolean bounds(CompactApproximator<K, V> that) {
-		checkCompatibility(that);
+		Bloom.checkCompatible(this, that);
 		final Store<V> thisValues = accessValues;
 		final Store<V> thatValues = that.values();
 		final int capacity = thisValues.capacity();
@@ -153,20 +152,10 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	}
 	
 	@Override
-	public int capacity() {
-		return values.size();
+	public BloomConfig<K> config() {
+		return config;
 	}
 	
-	@Override
-	public int hashCount() {
-		return hashCount;
-	}
-	
-	@Override
-	public Hasher<? super K> hasher() {
-		return hasher;
-	}
-
 	@Override
 	public Store<V> values() {
 		return accessValues;
@@ -179,8 +168,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		if (obj == this) return true;
 		if (!(obj instanceof BasicCompactApproximator<?, ?>)) return false;
 		BasicCompactApproximator<?, ?> that = (BasicCompactApproximator<?, ?>) obj;
-		if (this.hashCount() != that.hashCount()) return false;
-		if (!this.hasher().equals(that.hasher())) return false;
+		if (!this.config().equals(that.config())) return false;
 		if (!this.lattice().equals(that.lattice())) return false;
 		if (!this.values().equals(that.values())) return false;
 		/*
@@ -222,12 +210,6 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		return new BasicCompactApproximator<K, V>(this);
 	}
 	
-	private void checkCompatibility(CompactApproximator<K, V> that) {
-		if (this.hashCount != that.hashCount()) throw new IllegalArgumentException("Incompatible compact approximator, hashCount was " + that.hashCount() +", expected " + hashCount);
-		if (!this.hasher.equals(that.hasher())) throw new IllegalArgumentException("Incompatible compact approximator, multiHashes were not equal.");
-		if (!this.accessLattice.equals(that.lattice())) throw new IllegalArgumentException("Incompatible compact approximator, lattices were not equal.");
-	}
-
 	private class CompactBloomFilter extends AbstractBloomFilter<K> implements Cloneable {
 
 		final BitStore bits;
@@ -279,15 +261,10 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		}
 
 		@Override
-		public int hashCount() {
-			return hashCount;
+		public BloomConfig<K> config() {
+			return config;
 		}
 
-		@Override
-		public Hasher<? super K> hasher() {
-			return hasher;
-		}
-		
 		@Override
 		public BloomFilter<K> clone() {
 			// cannot access object clone here??

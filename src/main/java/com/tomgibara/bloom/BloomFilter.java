@@ -18,7 +18,6 @@ package com.tomgibara.bloom;
 
 import com.tomgibara.bits.BitStore;
 import com.tomgibara.hashing.HashCode;
-import com.tomgibara.hashing.Hasher;
 
 /**
  * <p>
@@ -47,32 +46,7 @@ public interface BloomFilter<E> extends Cloneable {
 
 	// accessors
 
-	/**
-	 * The number of bits in the bloom filter. This value will match the length
-	 * of the {@link BitVector} returned by {@link #getBitVector()}.
-	 * 
-	 * @return the number of bits in the filter, always positive
-	 */
-
-	default int capacity() {
-		return bits().size();
-	}
-
-	/**
-	 * The number of hashes used to mark bits in the Bloom filter.
-	 * 
-	 * @return the hash count, always positive
-	 */
-	
-	int hashCount();
-	
-	/**
-	 * The hasher that generates hash values for this Bloom filter.
-	 * 
-	 * @return a Hasher instance, never null
-	 */
-	
-	Hasher<? super E> hasher();
+	BloomConfig<E> config();
 	
 	/**
 	 * The bits of the Bloom filter. The returned {@link BitStore} is a live
@@ -98,9 +72,9 @@ public interface BloomFilter<E> extends Cloneable {
 	 */
 	
 	default boolean mightContain(E element) {
-		int hashCount = hashCount();
+		int hashCount = config().hashCount();
 		BitStore bitStore = bits();
-		HashCode hash = hasher().hash(element);
+		HashCode hash = config().hasher().hash(element);
 		for (int i = 0; i < hashCount; i++) {
 			if (!bitStore.getBit(hash.intValue())) return false;
 		}
@@ -184,7 +158,7 @@ public interface BloomFilter<E> extends Cloneable {
 	 */
 	
 	default double getFalsePositiveProbability() {
-		return Math.pow( (double) bits().ones().count() / bits().size(), hashCount());
+		return Math.pow( (double) bits().ones().count() / bits().size(), config().hashCount());
 	}
 
 	/**
