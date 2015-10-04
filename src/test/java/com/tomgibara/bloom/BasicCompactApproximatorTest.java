@@ -31,11 +31,6 @@ public class BasicCompactApproximatorTest extends TestCase {
 			keys.add(key);
 			values.add(value);
 		}
-		for (int i = 0; i < keys.size(); i++) {
-			System.out.println(values.get(i) + "  " + ca.getSupremum(keys.get(i)));
-		}
-		
-		System.out.println(ca.getValues().asList());
 	}
 	
 }
