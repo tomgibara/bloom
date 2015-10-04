@@ -16,8 +16,8 @@ public final class Bloom<K> {
 	
 	static void checkCompatible(BloomFilter<?> a, BloomFilter<?> b) {
 		if (b == null) throw new IllegalArgumentException("null filter");
-		if (a.getHashCount() != b.getHashCount()) throw new IllegalArgumentException("Incompatible filter, hashCount was " + b.getHashCount() +", expected " + a.getHashCount());
-		if (!a.getHasher().equals(b.getHasher())) throw new IllegalArgumentException("Incompatible filter, hashers were not equal");
+		if (a.hashCount() != b.hashCount()) throw new IllegalArgumentException("Incompatible filter, hashCount was " + b.hashCount() +", expected " + a.hashCount());
+		if (!a.hasher().equals(b.hasher())) throw new IllegalArgumentException("Incompatible filter, hashers were not equal");
 	}
 
 	public static <K> Bloom<K> withHasher(Hasher<? super K> hasher, int hashCount) {

@@ -9,20 +9,20 @@ abstract class AbstractBloomFilter<E> implements BloomFilter<E> {
 		if (obj == this) return true;
 		if (!(obj instanceof BloomFilter<?>)) return false;
 		final BloomFilter<?> that = (BloomFilter<?>) obj;
-		if (this.getHashCount() != that.getHashCount()) return false;
-		if (!this.getHasher().equals(that.getHasher())) return false;
-		if (!this.getBits().equals(that.getBits())) return false;
+		if (this.hashCount() != that.hashCount()) return false;
+		if (!this.hasher().equals(that.hasher())) return false;
+		if (!this.bits().equals(that.bits())) return false;
 		return true;
 	}
 	
 	@Override
 	public int hashCode() {
-		return getBits().hashCode();
+		return bits().hashCode();
 	}
 	
 	@Override
 	public String toString() {
-		return getBits().toString();
+		return bits().toString();
 	}
 
 	public abstract BloomFilter<E> clone();

@@ -36,9 +36,9 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 	@Override
 	public boolean addAll(BloomFilter<? extends E> filter) {
 		Bloom.checkCompatible(this, filter);
-		boolean contains = bits.contains().store(filter.getBits());
+		boolean contains = bits.contains().store(filter.bits());
 		if (contains) return false;
-		bits.or().withStore(filter.getBits());
+		bits.or().withStore(filter.bits());
 		return true;
 	}
 	
@@ -57,17 +57,17 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 	}
 	
 	@Override
-	public BitVector getBits() {
+	public BitVector bits() {
 		return publicBits;
 	}
 	
 	@Override
-	public int getHashCount() {
+	public int hashCount() {
 		return hashCount;
 	}
 	
 	@Override
-	public Hasher<? super E> getHasher() {
+	public Hasher<? super E> hasher() {
 		return hasher;
 	}
 	

@@ -54,8 +54,8 @@ public interface BloomFilter<E> extends Cloneable {
 	 * @return the number of bits in the filter, always positive
 	 */
 
-	default int getCapacity() {
-		return getBits().size();
+	default int capacity() {
+		return bits().size();
 	}
 
 	/**
@@ -64,7 +64,7 @@ public interface BloomFilter<E> extends Cloneable {
 	 * @return the hash count, always positive
 	 */
 	
-	int getHashCount();
+	int hashCount();
 	
 	/**
 	 * The hasher that generates hash values for this Bloom filter.
@@ -72,7 +72,7 @@ public interface BloomFilter<E> extends Cloneable {
 	 * @return a Hasher instance, never null
 	 */
 	
-	Hasher<? super E> getHasher();
+	Hasher<? super E> hasher();
 	
 	/**
 	 * The bits of the Bloom filter. The returned {@link BitStore} is a live
@@ -82,7 +82,7 @@ public interface BloomFilter<E> extends Cloneable {
 	 * @return the state of the filter, never null
 	 */
 	
-	BitStore getBits();
+	BitStore bits();
 
 	// collection-like methods
 
@@ -98,9 +98,9 @@ public interface BloomFilter<E> extends Cloneable {
 	 */
 	
 	default boolean mightContain(E element) {
-		int hashCount = getHashCount();
-		BitStore bitStore = getBits();
-		HashCode hash = getHasher().hash(element);
+		int hashCount = hashCount();
+		BitStore bitStore = bits();
+		HashCode hash = hasher().hash(element);
 		for (int i = 0; i < hashCount; i++) {
 			if (!bitStore.getBit(hash.intValue())) return false;
 		}
@@ -145,7 +145,7 @@ public interface BloomFilter<E> extends Cloneable {
 	 */
 	
 	default boolean isEmpty() {
-		return getBits().zeros().isAll();
+		return bits().zeros().isAll();
 	}
 
 	/**
@@ -184,7 +184,7 @@ public interface BloomFilter<E> extends Cloneable {
 	 */
 	
 	default double getFalsePositiveProbability() {
-		return Math.pow( (double) getBits().ones().count() / getBits().size(), getHashCount());
+		return Math.pow( (double) bits().ones().count() / bits().size(), hashCount());
 	}
 
 	/**
@@ -202,7 +202,7 @@ public interface BloomFilter<E> extends Cloneable {
 	
 	default boolean containsAll(BloomFilter<?> filter) throws IllegalArgumentException {
 		Bloom.checkCompatible(this, filter);
-		return getBits().contains().store(filter.getBits());
+		return bits().contains().store(filter.bits());
 	}
 
 	/**

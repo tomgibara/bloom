@@ -38,16 +38,16 @@ public class BasicBloomFilterTest extends TestCase {
 	public void testConstructorWithoutBitVector() {
 		BloomFilter<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter();
 		assertEquals(0.0, bloom.getFalsePositiveProbability());
-		assertEquals(10, bloom.getHashCount());
-		assertEquals(multiHash, bloom.getHasher());
+		assertEquals(10, bloom.hashCount());
+		assertEquals(multiHash, bloom.hasher());
 		assertEquals(true, bloom.isEmpty());
-		assertEquals(DEFAULT_SIZE.asInt(), bloom.getBits().size());
+		assertEquals(DEFAULT_SIZE.asInt(), bloom.bits().size());
 	}
 	
 	public void testConstructorWithBitVector() {
 		BloomFilter<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter(new BitVector(500));
-		assertEquals(500, bloom.getCapacity());
-		assertEquals(500, bloom.getHasher().getSize().asInt());
+		assertEquals(500, bloom.capacity());
+		assertEquals(500, bloom.hasher().getSize().asInt());
 	}
 	
 	public void testConstructorWithImmutableBitVector() {
@@ -96,7 +96,7 @@ public class BasicBloomFilterTest extends TestCase {
 	
 	public void testCapacity() {
 		BloomFilter<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter();
-		assertEquals(multiHash.getSize().asInt(), bloom.getCapacity());
+		assertEquals(multiHash.getSize().asInt(), bloom.capacity());
 	}
 	
 	public void testEqualsAndHashCode() {
@@ -133,7 +133,7 @@ public class BasicBloomFilterTest extends TestCase {
 			BloomFilter<Integer> b = bloom.clone();
 			assertFalse(b.add(i));
 			assertEquals(bloom, b);
-			final int newBitCount = bloom.getBits().ones().count();
+			final int newBitCount = bloom.bits().ones().count();
 			assertTrue(newBitCount >= bitCount);
 			bitCount = newBitCount;
 		}

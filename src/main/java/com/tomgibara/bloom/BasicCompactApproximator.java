@@ -128,7 +128,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	public boolean bounds(CompactApproximator<K, V> that) {
 		checkCompatibility(that);
 		final Store<V> thisValues = accessValues;
-		final Store<V> thatValues = that.getValues();
+		final Store<V> thatValues = that.values();
 		final int capacity = thisValues.capacity();
 		for (int i = 0; i < capacity; i++) {
 			if (!storeLattice.isOrdered(thatValues.get(i), thisValues.get(i))) return false;
@@ -148,27 +148,27 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	}
 
 	@Override
-	public Lattice<V> getLattice() {
+	public Lattice<V> lattice() {
 		return accessLattice;
 	}
 	
 	@Override
-	public int getCapacity() {
+	public int capacity() {
 		return values.size();
 	}
 	
 	@Override
-	public int getHashCount() {
+	public int hashCount() {
 		return hashCount;
 	}
 	
 	@Override
-	public Hasher<? super K> getHasher() {
+	public Hasher<? super K> hasher() {
 		return hasher;
 	}
 
 	@Override
-	public Store<V> getValues() {
+	public Store<V> values() {
 		return accessValues;
 	}
 	
@@ -179,10 +179,10 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		if (obj == this) return true;
 		if (!(obj instanceof BasicCompactApproximator<?, ?>)) return false;
 		BasicCompactApproximator<?, ?> that = (BasicCompactApproximator<?, ?>) obj;
-		if (this.getHashCount() != that.getHashCount()) return false;
-		if (!this.getHasher().equals(that.getHasher())) return false;
-		if (!this.getLattice().equals(that.getLattice())) return false;
-		if (!this.getValues().equals(that.getValues())) return false;
+		if (this.hashCount() != that.hashCount()) return false;
+		if (!this.hasher().equals(that.hasher())) return false;
+		if (!this.lattice().equals(that.lattice())) return false;
+		if (!this.values().equals(that.values())) return false;
 		/*
 		 * This idea doesn't work, because how do you produce a consistent hashcode - create a bounded lattice with same top & bottom?
 		 * must simply be a rule that for equality to be defined, equality in lattice must be consistent with object equality
@@ -208,12 +208,12 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 
 	@Override
 	public int hashCode() {
-		return getValues().hashCode();
+		return values().hashCode();
 	}
 	
 	@Override
 	public String toString() {
-		return getValues().toString();
+		return values().toString();
 	}
 	
 	@Override
@@ -223,9 +223,9 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	}
 	
 	private void checkCompatibility(CompactApproximator<K, V> that) {
-		if (this.hashCount != that.getHashCount()) throw new IllegalArgumentException("Incompatible compact approximator, hashCount was " + that.getHashCount() +", expected " + hashCount);
-		if (!this.hasher.equals(that.getHasher())) throw new IllegalArgumentException("Incompatible compact approximator, multiHashes were not equal.");
-		if (!this.accessLattice.equals(that.getLattice())) throw new IllegalArgumentException("Incompatible compact approximator, lattices were not equal.");
+		if (this.hashCount != that.hashCount()) throw new IllegalArgumentException("Incompatible compact approximator, hashCount was " + that.hashCount() +", expected " + hashCount);
+		if (!this.hasher.equals(that.hasher())) throw new IllegalArgumentException("Incompatible compact approximator, multiHashes were not equal.");
+		if (!this.accessLattice.equals(that.lattice())) throw new IllegalArgumentException("Incompatible compact approximator, lattices were not equal.");
 	}
 
 	private class CompactBloomFilter extends AbstractBloomFilter<K> implements Cloneable {
@@ -256,7 +256,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		public boolean addAll(BloomFilter<? extends K> filter) {
 			Bloom.checkCompatible(this, filter);
 			final BitStore thisBits = this.bits;
-			final BitStore thatBits = filter.getBits();
+			final BitStore thatBits = filter.bits();
 			final BitStore combined = Operation.AND.stores(thisBits.flipped(), thatBits);
 			Positions positions = combined.ones().positions();
 			if (!positions.hasNext()) return false;
@@ -274,17 +274,17 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		}
 
 		@Override
-		public BitStore getBits() {
+		public BitStore bits() {
 			return publicBits;
 		}
 
 		@Override
-		public int getHashCount() {
+		public int hashCount() {
 			return hashCount;
 		}
 
 		@Override
-		public Hasher<? super K> getHasher() {
+		public Hasher<? super K> hasher() {
 			return hasher;
 		}
 		
