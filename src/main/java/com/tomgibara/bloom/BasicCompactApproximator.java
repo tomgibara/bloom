@@ -23,7 +23,6 @@ import com.tomgibara.bits.BitStore.Positions;
 import com.tomgibara.bits.Operation;
 import com.tomgibara.collect.EquRel;
 import com.tomgibara.hashing.HashCode;
-import com.tomgibara.hashing.Hasher;
 import com.tomgibara.storage.Store;
 
 class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
@@ -44,14 +43,6 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		clear();
 	}
 	
-	private BasicCompactApproximator(BasicCompactApproximator<K, V> that) {
-		storeLattice = that.storeLattice;
-		accessLattice = that.accessLattice;
-		config = that.config;
-		values = that.values.mutableCopy();
-		accessValues = newAccessStore();
-	}
-
 	private BasicCompactApproximator(BasicCompactApproximator<K, V> that, Lattice<V> accessLattice) {
 		storeLattice = that.storeLattice;
 		this.accessLattice = accessLattice;
@@ -68,6 +59,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 
 	public V put(K key, V value) {
 		if (!accessLattice.contains(value)) throw new IllegalArgumentException();
+		checkMutable();
 		HashCode code = config.hasher().hash(key);
 		int hashCount = config.hashCount();
 		V previous = accessLattice.getTop();
@@ -110,6 +102,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	}
 	
 	public void clear() {
+		checkMutable();
 		values.fill( storeLattice.getBottom() );
 	}
 
@@ -160,6 +153,28 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	public Store<V> values() {
 		return accessValues;
 	}
+
+	// mutability
+	
+	@Override
+	public boolean isMutable() {
+		return values.isMutable();
+	}
+	
+	@Override
+	public CompactApproximator<K, V> immutableCopy() {
+		return new BasicCompactApproximator<>(config, values.immutableCopy(), storeLattice);
+	}
+	
+	@Override
+	public CompactApproximator<K, V> mutableCopy() {
+		return new BasicCompactApproximator<>(config, values.mutableCopy(), storeLattice);
+	}
+	
+	@Override
+	public CompactApproximator<K, V> immutableView() {
+		return new BasicCompactApproximator<>(config, values.immutable(), storeLattice);
+	}
 	
 	// object methods
 	
@@ -204,11 +219,13 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		return values().toString();
 	}
 	
-	@Override
-	//TODO replace clone with mutability?
-	public BasicCompactApproximator<K, V> clone() {
-		return new BasicCompactApproximator<K, V>(this);
+	// private utility methods
+	
+	private void checkMutable() {
+		if (!isMutable()) throw new IllegalStateException("immutable");
 	}
+
+	// inner classes
 	
 	private class CompactBloomFilter extends AbstractBloomFilter<K> implements Cloneable {
 
@@ -218,15 +235,37 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		final V top;
 		
 		CompactBloomFilter() {
-			bits = new CompactBits();
-			publicBits = bits.immutableView();
 			top = accessLattice.getTop();
-		}
-		
-		CompactBloomFilter(BitStore bits, BitStore publicBits, V top) {
-			this.bits = bits;
-			this.publicBits = publicBits;
-			this.top = top;
+			bits = new AbstractBitStore() {
+
+				@Override
+				public int size() {
+					return values.size();
+				}
+
+				@Override
+				public boolean getBit(int index) {
+					return storeLattice.isOrdered(top, values.get(index));
+				}
+
+				@Override
+				public void setBit(int index, boolean value) {
+					if (!value) throw new IllegalArgumentException("cannot clear bits");
+					values.set(index, storeLattice.join(top, values.get(index)));
+				}
+
+				@Override
+				public void clearWithZeros() {
+					clear();
+				}
+
+				@Override
+				public boolean isMutable() {
+					return BasicCompactApproximator.this.isMutable();
+				}
+
+			};
+			publicBits = bits.immutable();
 		}
 		
 		@Override
@@ -266,27 +305,9 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		}
 
 		@Override
-		public BloomFilter<K> clone() {
-			// cannot access object clone here??
-			return new CompactBloomFilter(bits, publicBits, top);
+		public boolean isMutable() {
+			return BasicCompactApproximator.this.isMutable();
 		}
-		
-	}
-
-	private class CompactBits extends AbstractBitStore implements BitStore {
-
-		final V top = accessLattice.getTop();
-
-		@Override
-		public int size() {
-			return values.size();
-		}
-
-		@Override
-		public boolean getBit(int index) {
-			return storeLattice.isOrdered(top, values.get(index));
-		}
-
 	}
 
 }

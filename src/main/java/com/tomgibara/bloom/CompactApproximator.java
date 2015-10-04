@@ -17,10 +17,10 @@
 package com.tomgibara.bloom;
 
 import com.tomgibara.algebra.lattice.Lattice;
-import com.tomgibara.hashing.Hasher;
+import com.tomgibara.fundament.Mutability;
 import com.tomgibara.storage.Store;
 
-public interface CompactApproximator<K, V> extends Cloneable {
+public interface CompactApproximator<K, V> extends Mutability<CompactApproximator<K, V>> {
 
 	// accessors
 
@@ -53,7 +53,4 @@ public interface CompactApproximator<K, V> extends Cloneable {
 	//bit true if corresponding value attains top
 	BloomFilter<K> asBloomFilter();
 
-	// mutability
-	
-	CompactApproximator<K, V> clone();
 }
