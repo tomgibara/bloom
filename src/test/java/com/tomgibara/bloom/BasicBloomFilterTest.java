@@ -186,7 +186,7 @@ public class BasicBloomFilterTest extends TestCase {
 		for (int i = 0; i < 30; i++) {
 			a.add(i);
 		}
-		assertTrue(a.boundedBy(a).bits().ones().isAll());
+		assertTrue(a.boundedBy(a).isFull());
 		BloomFilter<Integer> b = a.mutableCopy();
 		for (int i = 30; i < 60; i++) {
 			b.add(i);
@@ -195,11 +195,11 @@ public class BasicBloomFilterTest extends TestCase {
 		for (int i = 0; i < 60; i++) {
 			assertTrue(c.mightContain(i));
 		}
-		assertTrue(c.bits().ones().isAll());
+		assertTrue(c.isFull());
 		BloomFilter<Integer> d = b.boundedBy(a);
 		for (int i = 0; i < 60; i++) {
 			assertEquals(i < 30, d.mightContain(i));
 		}
-		assertFalse(d.bits().ones().isAll());
+		assertFalse(d.isFull());
 	}
 }

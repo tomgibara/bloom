@@ -124,6 +124,16 @@ public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 	default boolean isEmpty() {
 		return bits().zeros().isAll();
 	}
+	
+	/**
+	 * Whether the filter is full. This occurs when every bit is set and
+	 * {@link #mightContain(Object)} returns <code>true</code> for all values.
+	 * 
+	 * @return true if the filter contains all elements, false otherwise
+	 */
+	default boolean isFull() {
+		return bits().ones().isAll();
+	}
 
 	/**
 	 * Removes all elements from the filter.
@@ -188,8 +198,7 @@ public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 	 * Returns an immutable {@link BloomFilter} that contains an element if and
 	 * only if the element cannot be present in this filter without also being
 	 * present in the supplied filter. If the returned filter is full, then the
-	 * supplied filter contains all the elements of this filter, that is to say
-	 * <code>containsAll(filter)<code> is true.
+	 * supplied filter contains all the elements of this filter.
 	 * 
 	 * @param filter
 	 *            a compatible Bloom filter
