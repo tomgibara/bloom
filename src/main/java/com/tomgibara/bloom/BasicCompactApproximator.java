@@ -65,7 +65,9 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	}
 	
 	private Store<V> newAccessStore() {
-		return storeLattice.equals(accessLattice) ? values.immutableView() : new AccessStore<>(values, storeLattice, accessLattice.getTop());
+		if (storeLattice.equals(accessLattice)) return values.immutableView();
+		V top = accessLattice.getTop();
+		return values.transformedBy(v -> storeLattice.meet(top, v));
 	}
 
 	public V put(K key, V value) {
@@ -224,47 +226,6 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		if (this.hashCount != that.getHashCount()) throw new IllegalArgumentException("Incompatible compact approximator, hashCount was " + that.getHashCount() +", expected " + hashCount);
 		if (!this.hasher.equals(that.getHasher())) throw new IllegalArgumentException("Incompatible compact approximator, multiHashes were not equal.");
 		if (!this.accessLattice.equals(that.getLattice())) throw new IllegalArgumentException("Incompatible compact approximator, lattices were not equal.");
-	}
-	
-	//TODO could make immutable view of this sort a static helper method in storage
-	private static class AccessStore<E> implements Store<E> {
-
-		private final Store<E> store;
-		private final Lattice<E> lattice;
-		private final E newTop;
-
-		AccessStore(Store<E> store, Lattice<E> lattice, E newTop) {
-			this.store = store;
-			this.lattice = lattice;
-			this.newTop = newTop;
-		}
-		
-		@Override
-		public Class<? extends E> valueType() {
-			return store.valueType();
-		}
-
-		@Override
-		public int capacity() {
-			return store.capacity();
-		}
-
-		//TODO stores no nulls - can we make it safe to return capacity?
-		@Override
-		public int size() {
-			//return store.capacity();
-			return store.size();
-		}
-
-		@Override
-		public E get(int index) {
-			return lattice.meet(newTop, store.get(index));
-		}
-		
-		@Override
-		public BitStore population() {
-			return store.population();
-		}
 	}
 
 	private class CompactBloomFilter extends AbstractBloomFilter<K> implements Cloneable {
