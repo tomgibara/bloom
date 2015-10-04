@@ -1,7 +1,8 @@
 package com.tomgibara.bloom;
 
 import com.tomgibara.algebra.lattice.Lattice;
-import com.tomgibara.bits.BitVector;
+import com.tomgibara.bits.BitStore;
+import com.tomgibara.bits.Bits;
 import com.tomgibara.hashing.Hasher;
 import com.tomgibara.storage.Storage;
 import com.tomgibara.storage.Store;
@@ -44,14 +45,14 @@ public final class Bloom<K> {
 		return config;
 	}
 	
-	public BloomFilter<K> newFilter(BitVector bits) {
+	public BloomFilter<K> newFilter(BitStore bits) {
 		if (bits == null) throw new IllegalArgumentException("null bits");
 		if (!bits.isMutable()) throw new IllegalArgumentException("immutable bits");
 		return new BasicBloomFilter<>(bits, config.withCapacity(bits.size()));
 	}
 
 	public BloomFilter<K> newFilter() {
-		BitVector bits = new BitVector(config.capacity());
+		BitStore bits = Bits.newBitStore(config.capacity());
 		return new BasicBloomFilter<>(bits, config);
 	}
 
