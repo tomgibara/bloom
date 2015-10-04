@@ -1,30 +1,26 @@
 package com.tomgibara.bloom;
 
-import com.tomgibara.bits.BitVector;
+import com.tomgibara.bits.BitStore;
 import com.tomgibara.hashing.HashCode;
 
 class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 
 	// fields
-	
+
 	private final BloomConfig<E> config;
-	private final BitVector bits;
-	private final BitVector publicBits;
-	
+	private final BitStore bits;
+	private final BitStore publicBits;
+
 	// constructors
-	
-	BasicBloomFilter(BitVector bits, BloomConfig<E> config) {
+
+	BasicBloomFilter(BitStore bits, BloomConfig<E> config) {
 		this.config = config;
 		this.bits = bits;
 		publicBits = bits.immutableView();
 	}
-	
-	private BasicBloomFilter(BasicBloomFilter<E> that) {
-		this(that.bits.mutableCopy(), that.config);
-	}
-	
+
 	// bloom filter methods
-	
+
 	@Override
 	public void clear() {
 		bits.clearWithZeros();
@@ -33,6 +29,7 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 	@Override
 	public boolean addAll(BloomFilter<? extends E> filter) {
 		Bloom.checkCompatible(this, filter);
+		checkMutable();
 		boolean contains = bits.contains().store(filter.bits());
 		if (contains) return false;
 		bits.or().withStore(filter.bits());
@@ -41,6 +38,7 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 	
 	@Override
 	public boolean add(E element) {
+		checkMutable();
 		HashCode hash = config.hasher().hash(element);
 		int hashCount = config.hashCount();
 		int i = 0;
@@ -55,7 +53,7 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 	}
 	
 	@Override
-	public BitVector bits() {
+	public BitStore bits() {
 		return publicBits;
 	}
 	
@@ -64,11 +62,17 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 		return config;
 	}
 	
-	// object methods
-	
+	// mutability methods
+
 	@Override
-	public BasicBloomFilter<E> clone() {
-		return new BasicBloomFilter<E>(this);
+	public boolean isMutable() {
+		return bits.isMutable();
+	}
+
+	// private helper methods
+	
+	private void checkMutable() {
+		if (!isMutable()) throw new IllegalStateException("immutable");
 	}
 
 }

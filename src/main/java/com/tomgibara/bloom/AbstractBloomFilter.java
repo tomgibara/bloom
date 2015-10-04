@@ -24,7 +24,4 @@ abstract class AbstractBloomFilter<E> implements BloomFilter<E> {
 		return bits().toString();
 	}
 
-	public abstract BloomFilter<E> clone();
-
-	
 }

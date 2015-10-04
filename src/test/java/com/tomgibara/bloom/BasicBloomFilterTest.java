@@ -130,7 +130,7 @@ public class BasicBloomFilterTest extends TestCase {
 		int bitCount = 0;
 		for (int i = 0; i < 10; i++) {
 			assertTrue( bloom.add(i) );
-			BloomFilter<Integer> b = bloom.clone();
+			BloomFilter<Integer> b = bloom.mutableCopy();
 			assertFalse(b.add(i));
 			assertEquals(bloom, b);
 			final int newBitCount = bloom.bits().ones().count();
@@ -160,7 +160,7 @@ public class BasicBloomFilterTest extends TestCase {
 		BloomFilter<Integer> b = Bloom.withHasher(multiHash, 10).newFilter();
 		assertFalse(b.mightContain(1));
 		for (int i = 0; i < 10; i++) {
-			if (b.clone().add(i)) assertFalse(b.mightContain(i));
+			if (b.mutableCopy().add(i)) assertFalse(b.mightContain(i));
 			b.add(i);
 			assertTrue(b.mightContain(i));
 		}
@@ -177,7 +177,7 @@ public class BasicBloomFilterTest extends TestCase {
 		assertTrue(b.mightContainAll(values));
 		for (int i = 10; i < 20; i++) {
 			HashSet<Integer> vs = new HashSet<Integer>(values);
-			if (b.clone().addAll(vs)) assertFalse(b.mightContainAll(vs));
+			if (b.mutableCopy().addAll(vs)) assertFalse(b.mightContainAll(vs));
 		}
 	}
 }

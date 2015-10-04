@@ -17,6 +17,7 @@
 package com.tomgibara.bloom;
 
 import com.tomgibara.bits.BitStore;
+import com.tomgibara.fundament.Mutability;
 import com.tomgibara.hashing.HashCode;
 
 /**
@@ -42,7 +43,7 @@ import com.tomgibara.hashing.HashCode;
  *            the type of element stored in the bloom filter
  */
 
-public interface BloomFilter<E> extends Cloneable {
+public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 
 	// accessors
 
@@ -51,7 +52,7 @@ public interface BloomFilter<E> extends Cloneable {
 	/**
 	 * The bits of the Bloom filter. The returned {@link BitStore} is a live
 	 * view of the filter's state and will mutate as items are added to the
-	 * filter.
+	 * filter, but is immutable and may not be mutated externally.
 	 * 
 	 * @return the state of the filter, never null
 	 */
@@ -91,7 +92,9 @@ public interface BloomFilter<E> extends Cloneable {
 	 *         operation, false otherwise
 	 */
 	
-	boolean add(E newElement);
+	default boolean add(E newElement) {
+		throw new IllegalStateException("immutable");
+	}
 
 	/**
 	 * Adds every element of the supplied iterable to the filter.
@@ -191,10 +194,29 @@ public interface BloomFilter<E> extends Cloneable {
 	 *             filter
 	 */
 	
-	boolean addAll(BloomFilter<? extends E> filter) throws IllegalArgumentException;
+	default boolean addAll(BloomFilter<? extends E> filter) throws IllegalArgumentException {
+		throw new IllegalStateException("immutable");
+	}
 
 	// mutability methods
+
+	@Override
+	default boolean isMutable() {
+		return false;
+	}
+
+	@Override
+	default BloomFilter<E> immutableCopy() {
+		return new BasicBloomFilter<>(bits().immutableCopy(), config());
+	}
+
+	@Override
+	default BloomFilter<E> mutableCopy() {
+		return new BasicBloomFilter<>(bits().mutableCopy(), config());
+	}
 	
-	BloomFilter<E> clone();
-	
+	@Override
+	default BloomFilter<E> immutableView() {
+		return new BasicBloomFilter<>(bits().immutable(), config());
+	}
 }
