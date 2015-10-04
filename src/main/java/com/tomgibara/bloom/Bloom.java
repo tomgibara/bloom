@@ -40,6 +40,10 @@ public final class Bloom<K> {
 		this.config = config;
 	}
 
+	public BloomConfig<K> config() {
+		return config;
+	}
+	
 	public BloomFilter<K> newFilter(BitVector bits) {
 		if (bits == null) throw new IllegalArgumentException("null bits");
 		if (!bits.isMutable()) throw new IllegalArgumentException("immutable bits");
