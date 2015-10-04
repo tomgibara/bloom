@@ -43,7 +43,6 @@ import com.tomgibara.hashing.Hasher;
  *            the type of element stored in the bloom filter
  */
 
-//see http://code.google.com/p/guava-libraries/issues/detail?id=12
 public interface BloomFilter<E> extends Cloneable {
 
 	/**
