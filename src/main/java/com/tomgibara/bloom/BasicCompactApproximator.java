@@ -261,6 +261,10 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 			return lattice.meet(newTop, store.get(index));
 		}
 		
+		@Override
+		public BitStore population() {
+			return store.population();
+		}
 	}
 
 	private class CompactBloomFilter extends AbstractBloomFilter<K> implements Cloneable {
