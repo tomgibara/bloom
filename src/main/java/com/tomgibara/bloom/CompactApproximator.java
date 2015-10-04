@@ -22,24 +22,7 @@ import com.tomgibara.storage.Store;
 
 public interface CompactApproximator<K, V> extends Cloneable {
 
-	V put(K key, V value);
-
-	V getSupremum(K key);
-	
-	boolean mightContain(K key);
-
-	boolean mightContainAll(Iterable<? extends K> keys);
-	
-	boolean bounds(CompactApproximator<K, V> ca);
-	
-	CompactApproximator<K, V> boundedAbove(V upperBound);
-	
-	//bit true if corresponding value attains top
-	BloomFilter<K> asBloomFilter();
-	
-	void clear();
-
-	boolean isEmpty();
+	// accessors
 
 	Lattice<V> getLattice();
 	
@@ -50,6 +33,31 @@ public interface CompactApproximator<K, V> extends Cloneable {
 	Hasher<? super K> getHasher();
 
 	Store<V> getValues();
+
+	// collection-like methods
+	
+	V put(K key, V value);
+
+	V getSupremum(K key);
+	
+	boolean mightContain(K key);
+
+	boolean mightContainAll(Iterable<? extends K> keys);
+	
+	void clear();
+
+	boolean isEmpty();
+
+	// bloom methods
+	
+	boolean bounds(CompactApproximator<K, V> ca);
+	
+	CompactApproximator<K, V> boundedAbove(V upperBound);
+	
+	//bit true if corresponding value attains top
+	BloomFilter<K> asBloomFilter();
+
+	// mutability
 	
 	CompactApproximator<K, V> clone();
 }

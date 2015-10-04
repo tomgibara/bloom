@@ -45,6 +45,47 @@ import com.tomgibara.hashing.Hasher;
 
 public interface BloomFilter<E> extends Cloneable {
 
+	// accessors
+
+	/**
+	 * The number of bits in the bloom filter. This value will match the length
+	 * of the {@link BitVector} returned by {@link #getBitVector()}.
+	 * 
+	 * @return the number of bits in the filter, always positive
+	 */
+
+	default int getCapacity() {
+		return getBits().size();
+	}
+
+	/**
+	 * The number of hashes used to mark bits in the Bloom filter.
+	 * 
+	 * @return the hash count, always positive
+	 */
+	
+	int getHashCount();
+	
+	/**
+	 * The hasher that generates hash values for this Bloom filter.
+	 * 
+	 * @return a Hasher instance, never null
+	 */
+	
+	Hasher<? super E> getHasher();
+	
+	/**
+	 * The bits of the Bloom filter. The returned {@link BitStore} is a live
+	 * view of the filter's state and will mutate as items are added to the
+	 * filter.
+	 * 
+	 * @return the state of the filter, never null
+	 */
+	
+	BitStore getBits();
+
+	// collection-like methods
+
 	/**
 	 * Whether the Bloom filter might contain the specified element. As per the
 	 * characteristics of Bloom filters this method may return true for elements
@@ -64,19 +105,6 @@ public interface BloomFilter<E> extends Cloneable {
 			if (!bitStore.getBit(hash.intValue())) return false;
 		}
 		return true;
-	}
-	
-	/**
-	 * An estimate of the probability that {@link #mightContain(Object)} will
-	 * return true for an element that was not added to the filter. This
-	 * estimate will change as the number of elements in the filter increases
-	 * and is based on an assumption that hashing is optimal.
-	 * 
-	 * @return a probability between 0 and 1 inclusive
-	 */
-	
-	default double getFalsePositiveProbability() {
-		return Math.pow( (double) getBits().ones().count() / getBits().size(), getHashCount());
 	}
 
 	/**
@@ -144,6 +172,21 @@ public interface BloomFilter<E> extends Cloneable {
 		return true;
 	}
 	
+	// bloom methods
+
+	/**
+	 * An estimate of the probability that {@link #mightContain(Object)} will
+	 * return true for an element that was not added to the filter. This
+	 * estimate will change as the number of elements in the filter increases
+	 * and is based on an assumption that hashing is optimal.
+	 * 
+	 * @return a probability between 0 and 1 inclusive
+	 */
+	
+	default double getFalsePositiveProbability() {
+		return Math.pow( (double) getBits().ones().count() / getBits().size(), getHashCount());
+	}
+
 	/**
 	 * Whether the Bloom filter contains all of the elements contained in
 	 * another compatible bloom filter
@@ -176,43 +219,8 @@ public interface BloomFilter<E> extends Cloneable {
 	
 	boolean addAll(BloomFilter<? extends E> filter) throws IllegalArgumentException;
 
-	/**
-	 * The number of bits in the bloom filter. This value will match the length
-	 * of the {@link BitVector} returned by {@link #getBitVector()}.
-	 * 
-	 * @return the number of bits in the filter, always positive
-	 */
-
-	default int getCapacity() {
-		return getBits().size();
-	}
-
-	/**
-	 * The number of hashes used to mark bits in the Bloom filter.
-	 * 
-	 * @return the hash count, always positive
-	 */
+	// mutability methods
 	
-	int getHashCount();
-	
-	/**
-	 * The hasher that generates hash values for this Bloom filter.
-	 * 
-	 * @return a Hasher instance, never null
-	 */
-	
-	Hasher<? super E> getHasher();
-	
-	/**
-	 * The bits of the Bloom filter. The returned {@link BitStore} is a live
-	 * view of the filter's state and will mutate as items are added to the
-	 * filter.
-	 * 
-	 * @return the state of the filter, never null
-	 */
-	
-	BitStore getBits();
-
 	BloomFilter<E> clone();
 	
 }
