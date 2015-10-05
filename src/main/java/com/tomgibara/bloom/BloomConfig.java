@@ -39,7 +39,7 @@ public final class BloomConfig<E> {
 
 	/**
 	 * The number of bits in the bloom filter. This value will match the length
-	 * of the {@link BitVector} returned by {@link BloomFilter#bits()}.
+	 * of the {@link BitVector} returned by {@link BloomSet#bits()}.
 	 * 
 	 * @return the number of bits in the filter, always positive
 	 */

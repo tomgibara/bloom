@@ -43,7 +43,7 @@ import com.tomgibara.hashing.HashCode;
  *            the type of element stored in the bloom filter
  */
 
-public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
+public interface BloomSet<E> extends Mutability<BloomSet<E>> {
 
 	// accessors
 
@@ -189,13 +189,13 @@ public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 	 *             filter
 	 */
 	
-	default boolean containsAll(BloomFilter<?> filter) throws IllegalArgumentException {
+	default boolean containsAll(BloomSet<?> filter) throws IllegalArgumentException {
 		Bloom.checkCompatible(this, filter);
 		return bits().contains().store(filter.bits());
 	}
 
 	/**
-	 * Returns an immutable {@link BloomFilter} that contains an element if and
+	 * Returns an immutable {@link BloomSet} that contains an element if and
 	 * only if the element cannot be present in this filter without also being
 	 * present in the supplied filter. If the returned filter is full, then the
 	 * supplied filter contains all the elements of this filter.
@@ -209,7 +209,7 @@ public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 	 *             filter
 	 */
 
-	default BloomFilter<E> boundedBy(BloomFilter<E> filter) throws IllegalArgumentException {
+	default BloomSet<E> boundedBy(BloomSet<E> filter) throws IllegalArgumentException {
 		Bloom.checkCompatible(this, filter);
 		BitStore thisBits = this.bits();
 		BitStore thatBits = filter.bits();
@@ -218,8 +218,8 @@ public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 			@Override public boolean getBit(int index) { return !thisBits.getBit(index) || thatBits.getBit(index); }
 			@Override public int size() { return size; }
 		};
-		return new BloomFilter<E>() {
-			private final BloomConfig<E> config = BloomFilter.this.config();
+		return new BloomSet<E>() {
+			private final BloomConfig<E> config = BloomSet.this.config();
 			@Override public BloomConfig<E> config() { return config; }
 			@Override public BitStore bits() { return bits; }
 		};
@@ -237,7 +237,7 @@ public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 	 *             filter
 	 */
 	
-	default boolean addAll(BloomFilter<? extends E> filter) throws IllegalArgumentException {
+	default boolean addAll(BloomSet<? extends E> filter) throws IllegalArgumentException {
 		throw new IllegalStateException("immutable");
 	}
 
@@ -249,17 +249,17 @@ public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 	}
 
 	@Override
-	default BloomFilter<E> immutableCopy() {
-		return new BasicBloomFilter<>(bits().immutableCopy(), config());
+	default BloomSet<E> immutableCopy() {
+		return new BloomSetImpl<>(bits().immutableCopy(), config());
 	}
 
 	@Override
-	default BloomFilter<E> mutableCopy() {
-		return new BasicBloomFilter<>(bits().mutableCopy(), config());
+	default BloomSet<E> mutableCopy() {
+		return new BloomSetImpl<>(bits().mutableCopy(), config());
 	}
 	
 	@Override
-	default BloomFilter<E> immutableView() {
-		return new BasicBloomFilter<>(bits().immutable(), config());
+	default BloomSet<E> immutableView() {
+		return new BloomSetImpl<>(bits().immutable(), config());
 	}
 }

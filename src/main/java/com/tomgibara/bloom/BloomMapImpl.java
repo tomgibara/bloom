@@ -25,7 +25,7 @@ import com.tomgibara.collect.EquRel;
 import com.tomgibara.hashing.HashCode;
 import com.tomgibara.storage.Store;
 
-class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
+class BloomMapImpl<K,V> implements BloomMap<K, V> {
 
 	private BloomConfig<K> config;
 	private final Lattice<V> storeLattice;
@@ -34,7 +34,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	private final Store<V> accessValues;
 	private CompactBloomFilter bloomFilter = null;
 
-	BasicCompactApproximator(BloomConfig<K> config, Store<V> values, Lattice<V> lattice) {
+	BloomMapImpl(BloomConfig<K> config, Store<V> values, Lattice<V> lattice) {
 		this.config = config;
 		this.values = values;
 		this.storeLattice = lattice;
@@ -43,7 +43,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		clear();
 	}
 	
-	private BasicCompactApproximator(BasicCompactApproximator<K, V> that, Lattice<V> accessLattice) {
+	private BloomMapImpl(BloomMapImpl<K, V> that, Lattice<V> accessLattice) {
 		storeLattice = that.storeLattice;
 		this.accessLattice = accessLattice;
 		config = that.config;
@@ -117,7 +117,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	}
 	
 	@Override
-	public boolean bounds(CompactApproximator<K, V> that) {
+	public boolean bounds(BloomMap<K, V> that) {
 		Bloom.checkCompatible(this, that);
 		final Store<V> thisValues = accessValues;
 		final Store<V> thatValues = that.values();
@@ -146,13 +146,13 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 //	}
 
 	@Override
-	public CompactApproximator<K,V> boundedAbove(V upperBound) {
+	public BloomMap<K,V> boundedAbove(V upperBound) {
 		final Lattice<V> subLattice = accessLattice.boundedAbove(upperBound);
-		return subLattice.equals(accessLattice) ? this : new BasicCompactApproximator<K, V>(this, subLattice);
+		return subLattice.equals(accessLattice) ? this : new BloomMapImpl<K, V>(this, subLattice);
 	}
 	
 	@Override
-	public BloomFilter<K> asBloomFilter() {
+	public BloomSet<K> asBloomFilter() {
 		return bloomFilter == null ? bloomFilter = new CompactBloomFilter() : bloomFilter;
 	}
 
@@ -179,18 +179,18 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	}
 	
 	@Override
-	public CompactApproximator<K, V> immutableCopy() {
-		return new BasicCompactApproximator<>(config, values.immutableCopy(), storeLattice);
+	public BloomMap<K, V> immutableCopy() {
+		return new BloomMapImpl<>(config, values.immutableCopy(), storeLattice);
 	}
 	
 	@Override
-	public CompactApproximator<K, V> mutableCopy() {
-		return new BasicCompactApproximator<>(config, values.mutableCopy(), storeLattice);
+	public BloomMap<K, V> mutableCopy() {
+		return new BloomMapImpl<>(config, values.mutableCopy(), storeLattice);
 	}
 	
 	@Override
-	public CompactApproximator<K, V> immutableView() {
-		return new BasicCompactApproximator<>(config, values.immutable(), storeLattice);
+	public BloomMap<K, V> immutableView() {
+		return new BloomMapImpl<>(config, values.immutable(), storeLattice);
 	}
 	
 	// object methods
@@ -198,8 +198,8 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof BasicCompactApproximator<?, ?>)) return false;
-		BasicCompactApproximator<?, ?> that = (BasicCompactApproximator<?, ?>) obj;
+		if (!(obj instanceof BloomMapImpl<?, ?>)) return false;
+		BloomMapImpl<?, ?> that = (BloomMapImpl<?, ?>) obj;
 		if (!this.config().equals(that.config())) return false;
 		if (!this.lattice().equals(that.lattice())) return false;
 		if (!this.values().equals(that.values())) return false;
@@ -244,7 +244,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 
 	// inner classes
 	
-	private class CompactBloomFilter extends AbstractBloomFilter<K> implements Cloneable {
+	private class CompactBloomFilter extends AbstractBloomSet<K> implements Cloneable {
 
 		final BitStore bits;
 		final BitStore publicBits;
@@ -278,7 +278,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 
 				@Override
 				public boolean isMutable() {
-					return BasicCompactApproximator.this.isMutable();
+					return BloomMapImpl.this.isMutable();
 				}
 
 			};
@@ -291,7 +291,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		}
 
 		@Override
-		public boolean addAll(BloomFilter<? extends K> filter) {
+		public boolean addAll(BloomSet<? extends K> filter) {
 			Bloom.checkCompatible(this, filter);
 			final BitStore thisBits = this.bits;
 			final BitStore thatBits = filter.bits();
@@ -308,7 +308,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 
 		@Override
 		public void clear() {
-			BasicCompactApproximator.this.clear();
+			BloomMapImpl.this.clear();
 		}
 
 		@Override
@@ -323,7 +323,7 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 
 		@Override
 		public boolean isMutable() {
-			return BasicCompactApproximator.this.isMutable();
+			return BloomMapImpl.this.isMutable();
 		}
 	}
 

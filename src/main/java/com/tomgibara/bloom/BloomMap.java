@@ -20,7 +20,7 @@ import com.tomgibara.algebra.lattice.Lattice;
 import com.tomgibara.fundament.Mutability;
 import com.tomgibara.storage.Store;
 
-public interface CompactApproximator<K, V> extends Mutability<CompactApproximator<K, V>> {
+public interface BloomMap<K, V> extends Mutability<BloomMap<K, V>> {
 
 	// accessors
 
@@ -46,14 +46,14 @@ public interface CompactApproximator<K, V> extends Mutability<CompactApproximato
 
 	// bloom methods
 
-	boolean bounds(CompactApproximator<K, V> ca);
+	boolean bounds(BloomMap<K, V> ca);
 	
 	//TODO understand how to implement this
 	//BloomFilter<K> boundedBy(CompactApproximator<K, V> ca);
 	
-	CompactApproximator<K, V> boundedAbove(V upperBound);
+	BloomMap<K, V> boundedAbove(V upperBound);
 	
 	//bit true if corresponding value attains top
-	BloomFilter<K> asBloomFilter();
+	BloomSet<K> asBloomFilter();
 
 }

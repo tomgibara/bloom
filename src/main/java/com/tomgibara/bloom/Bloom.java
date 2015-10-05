@@ -12,13 +12,13 @@ public final class Bloom<K> {
 
 	private final BloomConfig<K> config;
 
-	static void checkCompatible(CompactApproximator<?, ?> a, CompactApproximator<?, ?> b) {
+	static void checkCompatible(BloomMap<?, ?> a, BloomMap<?, ?> b) {
 		if (b == null) throw new IllegalArgumentException("null approximator");
 		checkCompatible(a.config(), b.config());
 		if (!a.lattice().equals(b.lattice())) throw new IllegalArgumentException("Incompatible compact approximator, lattices were not equal");
 	}
 
-	static void checkCompatible(BloomFilter<?> a, BloomFilter<?> b) {
+	static void checkCompatible(BloomSet<?> a, BloomSet<?> b) {
 		if (b == null) throw new IllegalArgumentException("null filter");
 		checkCompatible(a.config(), b.config());
 	}
@@ -45,31 +45,31 @@ public final class Bloom<K> {
 		return config;
 	}
 	
-	public BloomFilter<K> newFilter(BitStore bits) {
+	public BloomSet<K> newFilter(BitStore bits) {
 		if (bits == null) throw new IllegalArgumentException("null bits");
 		if (!bits.isMutable()) throw new IllegalArgumentException("immutable bits");
-		return new BasicBloomFilter<>(bits, config.withCapacity(bits.size()));
+		return new BloomSetImpl<>(bits, config.withCapacity(bits.size()));
 	}
 
-	public BloomFilter<K> newFilter() {
+	public BloomSet<K> newFilter() {
 		BitStore bits = Bits.newBitStore(config.capacity());
-		return new BasicBloomFilter<>(bits, config);
+		return new BloomSetImpl<>(bits, config);
 	}
 
-	public <V> CompactApproximator<K, V> newApproximator(Store<V> values, Lattice<V> lattice) {
+	public <V> BloomMap<K, V> newApproximator(Store<V> values, Lattice<V> lattice) {
 		if (values == null) throw new IllegalArgumentException("null values");
 		if (!values.isMutable()) throw new IllegalArgumentException("immutable values");
 		if (lattice == null) throw new IllegalArgumentException("null lattice");
 		if (!lattice.isBoundedBelow()) throw new IllegalArgumentException("lattice not bounded below");
-		return new BasicCompactApproximator<K, V>(config, values, lattice);
+		return new BloomMapImpl<K, V>(config, values, lattice);
 	}
 
-	public <V> CompactApproximator<K, V> newApproximator(Storage<V> storage, Lattice<V> lattice) {
+	public <V> BloomMap<K, V> newApproximator(Storage<V> storage, Lattice<V> lattice) {
 		if (storage == null) throw new IllegalArgumentException("null storage");
 		if (lattice == null) throw new IllegalArgumentException("null lattice");
 		if (!lattice.isBoundedBelow()) throw new IllegalArgumentException("lattice not bounded below");
 		Store<V> values = storage.newStore(config.capacity());
-		return new BasicCompactApproximator<K, V>(config, values, lattice);
+		return new BloomMapImpl<K, V>(config, values, lattice);
 	}
 
 }

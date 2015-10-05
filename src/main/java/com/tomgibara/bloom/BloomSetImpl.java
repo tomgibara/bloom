@@ -3,7 +3,7 @@ package com.tomgibara.bloom;
 import com.tomgibara.bits.BitStore;
 import com.tomgibara.hashing.HashCode;
 
-class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
+class BloomSetImpl<E> extends AbstractBloomSet<E> {
 
 	// fields
 
@@ -13,7 +13,7 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 
 	// constructors
 
-	BasicBloomFilter(BitStore bits, BloomConfig<E> config) {
+	BloomSetImpl(BitStore bits, BloomConfig<E> config) {
 		this.config = config;
 		this.bits = bits;
 		publicBits = bits.immutableView();
@@ -27,7 +27,7 @@ class BasicBloomFilter<E> extends AbstractBloomFilter<E> {
 	}
 
 	@Override
-	public boolean addAll(BloomFilter<? extends E> filter) {
+	public boolean addAll(BloomSet<? extends E> filter) {
 		Bloom.checkCompatible(this, filter);
 		checkMutable();
 		boolean contains = bits.contains().store(filter.bits());

@@ -12,7 +12,7 @@ import com.tomgibara.storage.Storage;
 
 import junit.framework.TestCase;
 
-public class BasicCompactApproximatorTest extends TestCase {
+public class BloomMapImplTest extends TestCase {
 
 	static final HashSize DEFAULT_SIZE = HashSize.fromInt(1000);
 
@@ -20,7 +20,7 @@ public class BasicCompactApproximatorTest extends TestCase {
 		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 		hasher = hasher.ints().sized(DEFAULT_SIZE);
 		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
-		CompactApproximator<Integer, Integer> ca = Bloom.withHasher(hasher, 10).newApproximator(Storage.typed(int.class), lattice);
+		BloomMap<Integer, Integer> ca = Bloom.withHasher(hasher, 10).newApproximator(Storage.typed(int.class), lattice);
 		Random r = new Random(0L);
 		List<Integer> keys = new ArrayList<>();
 		List<Integer> values = new ArrayList<>();
