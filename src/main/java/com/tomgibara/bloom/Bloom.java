@@ -13,9 +13,9 @@ public final class Bloom<K> {
 	private final BloomConfig<K> config;
 
 	static void checkCompatible(BloomMap<?, ?> a, BloomMap<?, ?> b) {
-		if (b == null) throw new IllegalArgumentException("null approximator");
+		if (b == null) throw new IllegalArgumentException("null map");
 		checkCompatible(a.config(), b.config());
-		if (!a.lattice().equals(b.lattice())) throw new IllegalArgumentException("Incompatible compact approximator, lattices were not equal");
+		if (!a.lattice().equals(b.lattice())) throw new IllegalArgumentException("Incompatible maps, lattices were not equal");
 	}
 
 	static void checkCompatible(BloomSet<?> a, BloomSet<?> b) {

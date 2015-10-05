@@ -129,7 +129,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 	}
 
 //	@Override
-//	public BloomSet<K> boundedBy(CompactApproximator<K, V> that) {
+//	public BloomSet<K> boundedBy(BloomMap<K, V> that) {
 //		Bloom.checkCompatible(this, that);
 //		Store<V> thisValues = this.values();
 //		Store<V> thatValues = that.values();
@@ -139,7 +139,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 //			@Override public int size() { return size; }
 //		};
 //		return new BloomSet<K>() {
-//			private final BloomConfig<K> config = BasicCompactApproximator.this.config();
+//			private final BloomConfig<K> config = BloomMapImpl.this.config();
 //			@Override public BloomConfig<K> config() { return config; }
 //			@Override public BitStore bits() { return bits; }
 //		};
