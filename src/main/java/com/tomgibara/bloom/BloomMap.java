@@ -49,11 +49,11 @@ public interface BloomMap<K, V> extends Mutability<BloomMap<K, V>> {
 	boolean bounds(BloomMap<K, V> ca);
 	
 	//TODO understand how to implement this
-	//BloomFilter<K> boundedBy(CompactApproximator<K, V> ca);
+	//BloomSet<K> boundedBy(CompactApproximator<K, V> ca);
 	
 	BloomMap<K, V> boundedAbove(V upperBound);
 	
 	//bit true if corresponding value attains top
-	BloomSet<K> asBloomFilter();
+	BloomSet<K> asBloomSet();
 
 }

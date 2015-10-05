@@ -19,13 +19,13 @@ public final class Bloom<K> {
 	}
 
 	static void checkCompatible(BloomSet<?> a, BloomSet<?> b) {
-		if (b == null) throw new IllegalArgumentException("null filter");
+		if (b == null) throw new IllegalArgumentException("null set");
 		checkCompatible(a.config(), b.config());
 	}
 
 	static void checkCompatible(BloomConfig<?> ac, BloomConfig<?> bc) {
-		if (ac.hashCount() != bc.hashCount()) throw new IllegalArgumentException("Incompatible filter, hashCount was " + bc.hashCount() +", expected " + ac.hashCount());
-		if (!ac.hasher().equals(bc.hasher())) throw new IllegalArgumentException("Incompatible filter, hashers were not equal");
+		if (ac.hashCount() != bc.hashCount()) throw new IllegalArgumentException("Incompatible set, hashCount was " + bc.hashCount() +", expected " + ac.hashCount());
+		if (!ac.hasher().equals(bc.hasher())) throw new IllegalArgumentException("Incompatible set, hashers were not equal");
 	}
 
 	public static <K> Bloom<K> withHasher(Hasher<? super K> hasher, int hashCount) {
@@ -45,18 +45,18 @@ public final class Bloom<K> {
 		return config;
 	}
 	
-	public BloomSet<K> newFilter(BitStore bits) {
+	public BloomSet<K> newSet(BitStore bits) {
 		if (bits == null) throw new IllegalArgumentException("null bits");
 		if (!bits.isMutable()) throw new IllegalArgumentException("immutable bits");
 		return new BloomSetImpl<>(bits, config.withCapacity(bits.size()));
 	}
 
-	public BloomSet<K> newFilter() {
+	public BloomSet<K> newSet() {
 		BitStore bits = Bits.newBitStore(config.capacity());
 		return new BloomSetImpl<>(bits, config);
 	}
 
-	public <V> BloomMap<K, V> newApproximator(Store<V> values, Lattice<V> lattice) {
+	public <V> BloomMap<K, V> newMap(Store<V> values, Lattice<V> lattice) {
 		if (values == null) throw new IllegalArgumentException("null values");
 		if (!values.isMutable()) throw new IllegalArgumentException("immutable values");
 		if (lattice == null) throw new IllegalArgumentException("null lattice");
@@ -64,7 +64,7 @@ public final class Bloom<K> {
 		return new BloomMapImpl<K, V>(config, values, lattice);
 	}
 
-	public <V> BloomMap<K, V> newApproximator(Storage<V> storage, Lattice<V> lattice) {
+	public <V> BloomMap<K, V> newMap(Storage<V> storage, Lattice<V> lattice) {
 		if (storage == null) throw new IllegalArgumentException("null storage");
 		if (lattice == null) throw new IllegalArgumentException("null lattice");
 		if (!lattice.isBoundedBelow()) throw new IllegalArgumentException("lattice not bounded below");

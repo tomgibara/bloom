@@ -27,14 +27,14 @@ import com.tomgibara.hashing.HashCode;
  * </p>
  * 
  * <p>
- * Operations involving two <code>BloomFilter</code>s are generally only defined
- * for compatible instances. Two <code>BloomFilter</code> instances are
- * compatible if they have the same capacity, hashCount and equal multiHashes.
+ * Operations involving two <code>BloomSet</code>s are generally only defined
+ * for compatible instances. Two <code>BloomSet</code> instances are
+ * compatible if they have the same {@link BloomConfig}.
  * </p>
  * 
  * <p>
- * Two <code>BloomFilter</code>s are equal if they are compatible and their
- * bitVectors are equal.
+ * Two <code>BloomSet</code>s are equal if they are compatible and their
+ * {@link #bits()} are equal.
  * </p>
  * 
  * @author Tom Gibara
@@ -62,14 +62,14 @@ public interface BloomSet<E> extends Mutability<BloomSet<E>> {
 	// collection-like methods
 
 	/**
-	 * Whether the Bloom filter might contain the specified element. As per the
+	 * Whether the Bloom set might contain the specified element. As per the
 	 * characteristics of Bloom filters this method may return true for elements
-	 * that were never explicitly added to the filter, though it will never
+	 * that were never explicitly added to the set, though it will never
 	 * return false for an element that was.
 	 * 
 	 * @param element
-	 *            an element that could be in the filter
-	 * @return false only if the element was never added to the filter
+	 *            an element that could be in the set
+	 * @return false only if the element was never added to the set
 	 */
 	
 	default boolean mightContain(E element) {
@@ -83,7 +83,7 @@ public interface BloomSet<E> extends Mutability<BloomSet<E>> {
 	}
 
 	/**
-	 * Adds an element to the filter. Null elements should be supported if the
+	 * Adds an element to the set. Null elements should be supported if the
 	 * underlying {@link MultiHash} supports nulls.
 	 * 
 	 * @param newElement
@@ -97,7 +97,7 @@ public interface BloomSet<E> extends Mutability<BloomSet<E>> {
 	}
 
 	/**
-	 * Adds every element of the supplied iterable to the filter.
+	 * Adds every element of the supplied iterable to the set.
 	 * 
 	 * @param elements
 	 *            the elements to add, not null
@@ -115,9 +115,9 @@ public interface BloomSet<E> extends Mutability<BloomSet<E>> {
 	}
 
 	/**
-	 * Whether the filter is empty.
+	 * Whether the set is empty.
 	 * 
-	 * @return true if the filter has never had an element added to it, false
+	 * @return true if the set has never had an element added to it, false
 	 *         otherwise
 	 */
 	
@@ -126,17 +126,18 @@ public interface BloomSet<E> extends Mutability<BloomSet<E>> {
 	}
 	
 	/**
-	 * Whether the filter is full. This occurs when every bit is set and
-	 * {@link #mightContain(Object)} returns <code>true</code> for all values.
+	 * Whether the set is full. This occurs when every bit of the Bloom filter
+	 * is set and {@link #mightContain(Object)} returns <code>true</code> for
+	 * all values.
 	 * 
-	 * @return true if the filter contains all elements, false otherwise
+	 * @return true if the set contains all elements, false otherwise
 	 */
 	default boolean isFull() {
 		return bits().ones().isAll();
 	}
 
 	/**
-	 * Removes all elements from the filter.
+	 * Removes all elements from the set.
 	 */
 	
 	default void clear() {
@@ -144,12 +145,11 @@ public interface BloomSet<E> extends Mutability<BloomSet<E>> {
 	}
 	
 	/**
-	 * Whether the Bloom filter might contain all the elements in the supplied
-	 * iterable.
+	 * Whether the set might contain all the elements in the supplied iterable.
 	 * 
 	 * @param elements
-	 *            elements that may be contained in the filter
-	 * @return true if the filter might contain every element of the iterable,
+	 *            elements that may be contained in the set
+	 * @return true if the set might contain every element of the iterable,
 	 *         false otherwise
 	 * @throws IllegalArgumentException
 	 *             if a null iterable is supplied
@@ -165,9 +165,9 @@ public interface BloomSet<E> extends Mutability<BloomSet<E>> {
 
 	/**
 	 * An estimate of the probability that {@link #mightContain(Object)} will
-	 * return true for an element that was not added to the filter. This
-	 * estimate will change as the number of elements in the filter increases
-	 * and is based on an assumption that hashing is optimal.
+	 * return true for an element that was not added to the set. This estimate
+	 * will change as the number of elements in the filter increases and is
+	 * based on an assumption that hashing is optimal.
 	 * 
 	 * @return a probability between 0 and 1 inclusive
 	 */
@@ -177,42 +177,42 @@ public interface BloomSet<E> extends Mutability<BloomSet<E>> {
 	}
 
 	/**
-	 * Whether the Bloom filter contains all of the elements contained in
-	 * another compatible bloom filter
+	 * Whether the set contains all of the elements contained in
+	 * another compatible Bloom set.
 	 * 
-	 * @param filter
-	 *            a compatible Bloom filter
-	 * @return true if every element of the compatible filter is necessarily
-	 *         contained in this filter, false otherwise
+	 * @param set
+	 *            a compatible Bloom set
+	 * @return true if every element of the compatible set is necessarily
+	 *         contained in this set, false otherwise
 	 * @throws IllegalArgumentException
-	 *             if the supplied filter is null or not compatible with this
-	 *             filter
+	 *             if the supplied set is null or not compatible with this
+	 *             set
 	 */
 	
-	default boolean containsAll(BloomSet<?> filter) throws IllegalArgumentException {
-		Bloom.checkCompatible(this, filter);
-		return bits().contains().store(filter.bits());
+	default boolean containsAll(BloomSet<?> set) throws IllegalArgumentException {
+		Bloom.checkCompatible(this, set);
+		return bits().contains().store(set.bits());
 	}
 
 	/**
 	 * Returns an immutable {@link BloomSet} that contains an element if and
-	 * only if the element cannot be present in this filter without also being
-	 * present in the supplied filter. If the returned filter is full, then the
-	 * supplied filter contains all the elements of this filter.
+	 * only if the element cannot be present in this set without also being
+	 * present in the supplied set. If the returned set is full, then the
+	 * supplied set contains all the elements of this set.
 	 * 
-	 * @param filter
-	 *            a compatible Bloom filter
-	 * @return a Bloom filter containing all elements on which the supplied
-	 *         filter bounds this filter
+	 * @param set
+	 *            a compatible Bloom set
+	 * @return a Bloom set containing all elements on which the supplied
+	 *         set bounds this one
 	 * @throws IllegalArgumentException
-	 *             if the supplied filter is null or not compatible with this
-	 *             filter
+	 *             if the supplied set is null or not compatible with this
+	 *             set
 	 */
 
-	default BloomSet<E> boundedBy(BloomSet<E> filter) throws IllegalArgumentException {
-		Bloom.checkCompatible(this, filter);
+	default BloomSet<E> boundedBy(BloomSet<E> set) throws IllegalArgumentException {
+		Bloom.checkCompatible(this, set);
 		BitStore thisBits = this.bits();
-		BitStore thatBits = filter.bits();
+		BitStore thatBits = set.bits();
 		BitStore bits = new BitStore() {
 			private final int size = thisBits.size();
 			@Override public boolean getBit(int index) { return !thisBits.getBit(index) || thatBits.getBit(index); }
@@ -226,18 +226,18 @@ public interface BloomSet<E> extends Mutability<BloomSet<E>> {
 	}
 	
 	/**
-	 * Adds all of the elements of a compatible bloom filter.
+	 * Adds all of the elements of a compatible bloom set.
 	 * 
-	 * @param filter
-	 *            a compatible Bloom filter
-	 * @return true if the state of the bloom filter was modified by the
+	 * @param set
+	 *            a compatible Bloom set
+	 * @return true if the state of the bloom set was modified by the
 	 *         operation, false otherwise
 	 * @throws IllegalArgumentException
-	 *             if the supplied filter is null or not compatible with this
-	 *             filter
+	 *             if the supplied set is null or not compatible with this
+	 *             set
 	 */
 	
-	default boolean addAll(BloomSet<? extends E> filter) throws IllegalArgumentException {
+	default boolean addAll(BloomSet<? extends E> set) throws IllegalArgumentException {
 		throw new IllegalStateException("immutable");
 	}
 

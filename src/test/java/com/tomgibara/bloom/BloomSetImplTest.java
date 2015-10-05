@@ -36,7 +36,7 @@ public class BloomSetImplTest extends TestCase {
 	Hasher<Object> objHash = Hashing.identityHasher().sized(DEFAULT_SIZE);
 
 	public void testConstructorWithoutBitVector() {
-		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter();
+		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newSet();
 		assertEquals(0.0, bloom.getFalsePositiveProbability());
 		assertEquals(10, bloom.config().hashCount());
 		assertEquals(multiHash, bloom.config().hasher());
@@ -45,14 +45,14 @@ public class BloomSetImplTest extends TestCase {
 	}
 	
 	public void testConstructorWithBitVector() {
-		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter(new BitVector(500));
+		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newSet(new BitVector(500));
 		assertEquals(500, bloom.config().capacity());
 		assertEquals(500, bloom.config().hasher().getSize().asInt());
 	}
 	
 	public void testConstructorWithImmutableBitVector() {
 		try {
-			Bloom.withHasher(multiHash, 10).newFilter(new BitVector(500).immutableCopy());
+			Bloom.withHasher(multiHash, 10).newSet(new BitVector(500).immutableCopy());
 			fail();
 		} catch (IllegalArgumentException e) {
 			/* expected */
@@ -60,7 +60,7 @@ public class BloomSetImplTest extends TestCase {
 	}
 	
 	public void testIsEmpty() {
-		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter();
+		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newSet();
 		assertTrue(bloom.isEmpty());
 		bloom.add(1);
 		assertFalse(bloom.isEmpty());
@@ -71,7 +71,7 @@ public class BloomSetImplTest extends TestCase {
 	public void testGetFalsePositiveProbability() {
 		int size = 10;
 		Hasher<Integer> hasher = Hashing.<Integer>objectHasher().sized(HashSize.fromInt(size));
-		BloomSet<Integer> bloom = Bloom.withHasher(hasher, 1).newFilter();
+		BloomSet<Integer> bloom = Bloom.withHasher(hasher, 1).newSet();
 		double p = bloom.getFalsePositiveProbability();
 		assertEquals(0.0, p);
 		for (int i = 0; i < size; i++) {
@@ -84,7 +84,7 @@ public class BloomSetImplTest extends TestCase {
 	}
 	
 	public void testClear() {
-		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter();
+		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newSet();
 		assertTrue(bloom.isEmpty());
 		bloom.clear();
 		assertTrue(bloom.isEmpty());
@@ -95,15 +95,15 @@ public class BloomSetImplTest extends TestCase {
 	}
 	
 	public void testCapacity() {
-		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter();
+		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newSet();
 		assertEquals(multiHash.getSize().asInt(), bloom.config().capacity());
 	}
 	
 	public void testEqualsAndHashCode() {
-		BloomSet<Integer> b1 = Bloom.withHasher(multiHash, 1).newFilter();
-		BloomSet<Integer> b2 = Bloom.withHasher(multiHash, 1).newFilter();
-		BloomSet<Integer> b3 = Bloom.withHasher(multiHash, 2).newFilter();
-		BloomSet<Integer> b4 = Bloom.<Integer>withHasher(objHash, 1).newFilter();
+		BloomSet<Integer> b1 = Bloom.withHasher(multiHash, 1).newSet();
+		BloomSet<Integer> b2 = Bloom.withHasher(multiHash, 1).newSet();
+		BloomSet<Integer> b3 = Bloom.withHasher(multiHash, 2).newSet();
+		BloomSet<Integer> b4 = Bloom.<Integer>withHasher(objHash, 1).newSet();
 		assertEquals(b1, b1);
 		assertEquals(b1, b2);
 		assertEquals(b2, b1);
@@ -126,7 +126,7 @@ public class BloomSetImplTest extends TestCase {
 	}
 	
 	public void testAdd() {
-		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newFilter();
+		BloomSet<Integer> bloom = Bloom.withHasher(multiHash, 10).newSet();
 		int bitCount = 0;
 		for (int i = 0; i < 10; i++) {
 			assertTrue( bloom.add(i) );
@@ -143,8 +143,8 @@ public class BloomSetImplTest extends TestCase {
 	}
 	
 	public void testAddAll() {
-		BloomSet<Integer> b1 = Bloom.withHasher(multiHash, 10).newFilter();
-		BloomSet<Integer> b2 = Bloom.withHasher(multiHash, 10).newFilter();
+		BloomSet<Integer> b1 = Bloom.withHasher(multiHash, 10).newSet();
+		BloomSet<Integer> b2 = Bloom.withHasher(multiHash, 10).newSet();
 		HashSet<Integer> values = new HashSet<Integer>();
 		for (int i = 0; i < 10; i++) {
 			b1.add(i);
@@ -157,7 +157,7 @@ public class BloomSetImplTest extends TestCase {
 	}
 	
 	public void testMightContain() {
-		BloomSet<Integer> b = Bloom.withHasher(multiHash, 10).newFilter();
+		BloomSet<Integer> b = Bloom.withHasher(multiHash, 10).newSet();
 		assertFalse(b.mightContain(1));
 		for (int i = 0; i < 10; i++) {
 			if (b.mutableCopy().add(i)) assertFalse(b.mightContain(i));
@@ -167,7 +167,7 @@ public class BloomSetImplTest extends TestCase {
 	}
 	
 	public void testMightContainAll() {
-		BloomSet<Integer> b = Bloom.withHasher(multiHash, 10).newFilter();
+		BloomSet<Integer> b = Bloom.withHasher(multiHash, 10).newSet();
 		assertFalse(b.mightContainAll(Collections.singleton(1)));
 		HashSet<Integer> values = new HashSet<Integer>();
 		for (int i = 0; i < 10; i++) {
@@ -182,7 +182,7 @@ public class BloomSetImplTest extends TestCase {
 	}
 	
 	public void testBoundedBy() {
-		BloomSet<Integer> a = Bloom.withHasher(multiHash, 10).newFilter();
+		BloomSet<Integer> a = Bloom.withHasher(multiHash, 10).newSet();
 		for (int i = 0; i < 30; i++) {
 			a.add(i);
 		}

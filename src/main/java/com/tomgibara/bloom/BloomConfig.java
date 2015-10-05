@@ -38,15 +38,16 @@ public final class BloomConfig<E> {
 	}
 
 	/**
-	 * The number of bits in the bloom filter. This value will match the length
-	 * of the {@link BitVector} returned by {@link BloomSet#bits()}.
+	 * The number of bits that support the collection. This value will match the
+	 * size of the stores returned by {@link BloomSet#bits()} and
+	 * {@link BloomMap#values()}.
 	 * 
-	 * @return the number of bits in the filter, always positive
+	 * @return the number of bits backing the collection, always positive
 	 */
 	public int capacity() { return capacity; }
 
 	/**
-	 * The hasher that generates hash values for the Bloom filter.
+	 * The hasher that generates hash values for the Bloom collection.
 	 * 
 	 * @return a Hasher instance, never null
 	 */
@@ -54,7 +55,7 @@ public final class BloomConfig<E> {
 	public Hasher<? super E> hasher() { return hasher; }
 
 	/**
-	 * The number of hashes used to mark bits in the Bloom filter.
+	 * The number of hashes used to mark bits in the Bloom collection.
 	 * 
 	 * @return the hash count, always positive
 	 */

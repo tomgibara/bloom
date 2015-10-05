@@ -19,7 +19,7 @@ class BloomSetImpl<E> extends AbstractBloomSet<E> {
 		publicBits = bits.immutableView();
 	}
 
-	// bloom filter methods
+	// bloom set methods
 
 	@Override
 	public void clear() {
@@ -27,12 +27,12 @@ class BloomSetImpl<E> extends AbstractBloomSet<E> {
 	}
 
 	@Override
-	public boolean addAll(BloomSet<? extends E> filter) {
-		Bloom.checkCompatible(this, filter);
+	public boolean addAll(BloomSet<? extends E> set) {
+		Bloom.checkCompatible(this, set);
 		checkMutable();
-		boolean contains = bits.contains().store(filter.bits());
+		boolean contains = bits.contains().store(set.bits());
 		if (contains) return false;
-		bits.or().withStore(filter.bits());
+		bits.or().withStore(set.bits());
 		return true;
 	}
 	

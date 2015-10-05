@@ -32,7 +32,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 	private final Lattice<V> accessLattice;
 	private final Store<V> values;
 	private final Store<V> accessValues;
-	private CompactBloomFilter bloomFilter = null;
+	private MapBloomSet bloomSet = null;
 
 	BloomMapImpl(BloomConfig<K> config, Store<V> values, Lattice<V> lattice) {
 		this.config = config;
@@ -129,7 +129,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 	}
 
 //	@Override
-//	public BloomFilter<K> boundedBy(CompactApproximator<K, V> that) {
+//	public BloomSet<K> boundedBy(CompactApproximator<K, V> that) {
 //		Bloom.checkCompatible(this, that);
 //		Store<V> thisValues = this.values();
 //		Store<V> thatValues = that.values();
@@ -138,7 +138,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 //			@Override public boolean getBit(int index) { return storeLattice.isOrdered(thatValues.get(index), thisValues.get(index)); }
 //			@Override public int size() { return size; }
 //		};
-//		return new BloomFilter<K>() {
+//		return new BloomSet<K>() {
 //			private final BloomConfig<K> config = BasicCompactApproximator.this.config();
 //			@Override public BloomConfig<K> config() { return config; }
 //			@Override public BitStore bits() { return bits; }
@@ -152,8 +152,8 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 	}
 	
 	@Override
-	public BloomSet<K> asBloomFilter() {
-		return bloomFilter == null ? bloomFilter = new CompactBloomFilter() : bloomFilter;
+	public BloomSet<K> asBloomSet() {
+		return bloomSet == null ? bloomSet = new MapBloomSet() : bloomSet;
 	}
 
 	@Override
@@ -244,14 +244,14 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 
 	// inner classes
 	
-	private class CompactBloomFilter extends AbstractBloomSet<K> implements Cloneable {
+	private class MapBloomSet extends AbstractBloomSet<K> implements Cloneable {
 
 		final BitStore bits;
 		final BitStore publicBits;
 		//cached values
 		final V top;
 		
-		CompactBloomFilter() {
+		MapBloomSet() {
 			top = accessLattice.getTop();
 			bits = new AbstractBitStore() {
 
@@ -291,10 +291,10 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 		}
 
 		@Override
-		public boolean addAll(BloomSet<? extends K> filter) {
-			Bloom.checkCompatible(this, filter);
+		public boolean addAll(BloomSet<? extends K> set) {
+			Bloom.checkCompatible(this, set);
 			final BitStore thisBits = this.bits;
-			final BitStore thatBits = filter.bits();
+			final BitStore thatBits = set.bits();
 			final BitStore combined = Operation.AND.stores(thisBits.flipped(), thatBits);
 			Positions positions = combined.ones().positions();
 			if (!positions.hasNext()) return false;

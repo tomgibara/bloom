@@ -20,7 +20,7 @@ public class BloomMapImplTest extends TestCase {
 		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 		hasher = hasher.ints().sized(DEFAULT_SIZE);
 		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
-		BloomMap<Integer, Integer> ca = Bloom.withHasher(hasher, 10).newApproximator(Storage.typed(int.class), lattice);
+		BloomMap<Integer, Integer> ca = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class), lattice);
 		Random r = new Random(0L);
 		List<Integer> keys = new ArrayList<>();
 		List<Integer> values = new ArrayList<>();
@@ -44,7 +44,7 @@ public class BloomMapImplTest extends TestCase {
 //			ca2.put(i, 10 + i);
 //		}
 //		assertTrue(ca1.boundedBy(ca2).isFull());
-//		BloomFilter<Integer> b = ca2.boundedBy(ca1);
+//		BloomSet<Integer> b = ca2.boundedBy(ca1);
 //		assertFalse(b.isFull());
 //		for (int i = 0; i < 30; i++) {
 //			System.out.println(i + " " + b.mightContain(i));
