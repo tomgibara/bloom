@@ -33,4 +33,22 @@ public class BasicCompactApproximatorTest extends TestCase {
 		}
 	}
 	
+//	public void testBoundedBy() {
+//		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
+//		hasher = hasher.ints().sized(DEFAULT_SIZE);
+//		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
+//		CompactApproximator<Integer, Integer> ca1 = Bloom.withHasher(hasher, 10).newApproximator(Storage.typed(int.class), lattice);
+//		CompactApproximator<Integer, Integer> ca2 = Bloom.withHasher(hasher, 10).newApproximator(Storage.typed(int.class), lattice);
+//		for (int i = 0; i < 30; i++) {
+//			ca1.put(i, 10);
+//			ca2.put(i, 10 + i);
+//		}
+//		assertTrue(ca1.boundedBy(ca2).isFull());
+//		BloomFilter<Integer> b = ca2.boundedBy(ca1);
+//		assertFalse(b.isFull());
+//		for (int i = 0; i < 30; i++) {
+//			System.out.println(i + " " + b.mightContain(i));
+//			//assertEquals(i == 0, b.mightContain(i));
+//		}
+//	}
 }

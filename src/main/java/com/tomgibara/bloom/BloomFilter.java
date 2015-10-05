@@ -214,21 +214,14 @@ public interface BloomFilter<E> extends Mutability<BloomFilter<E>> {
 		BitStore thisBits = this.bits();
 		BitStore thatBits = filter.bits();
 		BitStore bits = new BitStore() {
-			final int size = thisBits.size();
+			private final int size = thisBits.size();
 			@Override public boolean getBit(int index) { return !thisBits.getBit(index) || thatBits.getBit(index); }
 			@Override public int size() { return size; }
 		};
 		return new BloomFilter<E>() {
-
-			@Override
-			public BloomConfig<E> config() {
-				return BloomFilter.this.config();
-			}
-
-			@Override
-			public BitStore bits() {
-				return bits;
-			}
+			private final BloomConfig<E> config = BloomFilter.this.config();
+			@Override public BloomConfig<E> config() { return config; }
+			@Override public BitStore bits() { return bits; }
 		};
 	}
 	

@@ -127,7 +127,24 @@ class BasicCompactApproximator<K,V> implements CompactApproximator<K, V> {
 		}
 		return true;
 	}
-	
+
+//	@Override
+//	public BloomFilter<K> boundedBy(CompactApproximator<K, V> that) {
+//		Bloom.checkCompatible(this, that);
+//		Store<V> thisValues = this.values();
+//		Store<V> thatValues = that.values();
+//		BitStore bits = new BitStore() {
+//			private final int size = thisValues.capacity();
+//			@Override public boolean getBit(int index) { return storeLattice.isOrdered(thatValues.get(index), thisValues.get(index)); }
+//			@Override public int size() { return size; }
+//		};
+//		return new BloomFilter<K>() {
+//			private final BloomConfig<K> config = BasicCompactApproximator.this.config();
+//			@Override public BloomConfig<K> config() { return config; }
+//			@Override public BitStore bits() { return bits; }
+//		};
+//	}
+
 	@Override
 	public CompactApproximator<K,V> boundedAbove(V upperBound) {
 		final Lattice<V> subLattice = accessLattice.boundedAbove(upperBound);

@@ -45,8 +45,11 @@ public interface CompactApproximator<K, V> extends Mutability<CompactApproximato
 	boolean isEmpty();
 
 	// bloom methods
-	
+
 	boolean bounds(CompactApproximator<K, V> ca);
+	
+	//TODO understand how to implement this
+	//BloomFilter<K> boundedBy(CompactApproximator<K, V> ca);
 	
 	CompactApproximator<K, V> boundedAbove(V upperBound);
 	
