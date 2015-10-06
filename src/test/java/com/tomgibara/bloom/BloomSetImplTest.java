@@ -51,12 +51,7 @@ public class BloomSetImplTest extends TestCase {
 	}
 	
 	public void testConstructorWithImmutableBitVector() {
-		try {
-			Bloom.withHasher(multiHash, 10).newSet(new BitVector(500).immutableCopy());
-			fail();
-		} catch (IllegalArgumentException e) {
-			/* expected */
-		}
+		assertFalse( Bloom.withHasher(multiHash, 10).newSet(new BitVector(500).immutableCopy()).isMutable() );
 	}
 	
 	public void testIsEmpty() {

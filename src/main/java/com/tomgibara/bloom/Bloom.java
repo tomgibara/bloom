@@ -7,7 +7,6 @@ import com.tomgibara.hashing.Hasher;
 import com.tomgibara.storage.Storage;
 import com.tomgibara.storage.Store;
 
-//TODO should allow immutables to wrapped to make immutable structures?
 public final class Bloom<K> {
 
 	private final BloomConfig<K> config;
@@ -47,7 +46,6 @@ public final class Bloom<K> {
 	
 	public BloomSet<K> newSet(BitStore bits) {
 		if (bits == null) throw new IllegalArgumentException("null bits");
-		if (!bits.isMutable()) throw new IllegalArgumentException("immutable bits");
 		return new BloomSetImpl<>(bits, config.withCapacity(bits.size()));
 	}
 
@@ -58,7 +56,6 @@ public final class Bloom<K> {
 
 	public <V> BloomMap<K, V> newMap(Store<V> values, Lattice<V> lattice) {
 		if (values == null) throw new IllegalArgumentException("null values");
-		if (!values.isMutable()) throw new IllegalArgumentException("immutable values");
 		if (values.isNullAllowed()) throw new IllegalArgumentException("null values possible");
 		if (lattice == null) throw new IllegalArgumentException("null lattice");
 		if (!lattice.isBoundedBelow()) throw new IllegalArgumentException("lattice not bounded below");
