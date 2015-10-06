@@ -42,8 +42,10 @@ class BloomSetImpl<E> extends AbstractBloomSet<E> {
 		HashCode hash = config.hasher().hash(element);
 		int hashCount = config.hashCount();
 		int i = 0;
-		for (; i < hashCount; i++) {
-			if (!bits.getThenSetBit(hash.intValue(), true)) break;
+		while (i < hashCount) {
+			boolean previous = bits.getThenSetBit(hash.intValue(), true);
+			i++;
+			if (!previous) break;
 		}
 		if (i == hashCount) return false;
 		for (; i < hashCount; i++) {
