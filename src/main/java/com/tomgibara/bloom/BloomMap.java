@@ -51,7 +51,7 @@ public interface BloomMap<K, V> extends Mutability<BloomMap<K, V>> {
 	boolean bounds(BloomMap<K, V> ca);
 	
 	//TODO understand how to implement this
-	//BloomSet<K> boundedBy(BloomMapr<K, V> ca);
+	//BloomSet<K> boundedBy(BloomMap<K, V> ca);
 	
 	BloomMap<K, V> boundedAbove(V upperBound);
 	

@@ -51,8 +51,8 @@ public class BloomMapImplTest extends TestCase {
 //		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 //		hasher = hasher.ints().sized(DEFAULT_SIZE);
 //		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
-//		BloomMap<Integer, Integer> ca1 = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class), lattice);
-//		BloomMap<Integer, Integer> ca2 = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class), lattice);
+//		BloomMap<Integer, Integer> ca1 = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, false), lattice);
+//		BloomMap<Integer, Integer> ca2 = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, false), lattice);
 //		for (int i = 0; i < 30; i++) {
 //			ca1.put(i, 10);
 //			ca2.put(i, 10 + i);

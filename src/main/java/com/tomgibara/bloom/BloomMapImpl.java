@@ -134,7 +134,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 //		Store<V> thisValues = this.values();
 //		Store<V> thatValues = that.values();
 //		BitStore bits = new BitStore() {
-//			private final int size = thisValues.capacity();
+//			private final int size = thisValues.size();
 //			@Override public boolean getBit(int index) { return storeLattice.isOrdered(thatValues.get(index), thisValues.get(index)); }
 //			@Override public int size() { return size; }
 //		};
