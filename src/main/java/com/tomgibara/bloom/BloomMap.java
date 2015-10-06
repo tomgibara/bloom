@@ -44,6 +44,8 @@ public interface BloomMap<K, V> extends Mutability<BloomMap<K, V>> {
 
 	boolean isEmpty();
 
+	boolean isFull();
+	
 	// bloom methods
 
 	boolean bounds(BloomMap<K, V> ca);

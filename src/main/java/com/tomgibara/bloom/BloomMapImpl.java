@@ -107,13 +107,11 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 	}
 
 	public boolean isEmpty() {
-		final V bottom = storeLattice.getBottom();
-		EquRel<V> equality = storeLattice.equality();
-		//TODO have stores implement iterable?
-		for (V value : values.asList()) {
-			if (!equality.isEquivalent(value, bottom)) return false;
-		}
-		return true;
+		return isAll(storeLattice.getBottom());
+	}
+	
+	public boolean isFull() {
+		return isAll(storeLattice.getTop());
 	}
 	
 	@Override
@@ -242,6 +240,15 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 		if (!isMutable()) throw new IllegalStateException("immutable");
 	}
 
+	private boolean isAll(V v) {
+		EquRel<V> equality = storeLattice.equality();
+		//TODO have stores implement iterable?
+		for (V value : values.asList()) {
+			if (!equality.isEquivalent(value, v)) return false;
+		}
+		return true;
+	}
+	
 	// inner classes
 	
 	private class MapBloomSet extends AbstractBloomSet<K> implements Cloneable {
