@@ -121,7 +121,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 		Bloom.checkCompatible(this, that);
 		final Store<V> thisValues = accessValues;
 		final Store<V> thatValues = that.values();
-		final int capacity = thisValues.capacity();
+		final int capacity = thisValues.size();
 		for (int i = 0; i < capacity; i++) {
 			if (!storeLattice.isOrdered(thatValues.get(i), thisValues.get(i))) return false;
 		}
@@ -257,7 +257,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 
 				@Override
 				public int size() {
-					return values.size();
+					return values.count();
 				}
 
 				@Override

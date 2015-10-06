@@ -20,7 +20,7 @@ public class BloomMapImplTest extends TestCase {
 		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 		hasher = hasher.ints().sized(DEFAULT_SIZE);
 		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
-		BloomMap<Integer, Integer> ca = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class), lattice);
+		BloomMap<Integer, Integer> ca = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, false), lattice);
 		Random r = new Random(0L);
 		List<Integer> keys = new ArrayList<>();
 		List<Integer> values = new ArrayList<>();
