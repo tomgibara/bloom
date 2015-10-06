@@ -33,6 +33,20 @@ public class BloomMapImplTest extends TestCase {
 		}
 	}
 	
+	public void testKeys() {
+		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
+		hasher = hasher.ints().sized(DEFAULT_SIZE);
+		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
+		BloomMap<Integer, Integer> map = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, false), lattice);
+		BloomSet<Integer> keys = map.keys();
+		assertTrue(keys.isEmpty());
+		for (int i = 0; i < 30; i++) {
+			assertFalse(keys.mightContain(i));
+			map.put(i, i + 10);
+			assertTrue(keys.mightContain(i));
+		}
+	}
+	
 //	public void testBoundedBy() {
 //		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 //		hasher = hasher.ints().sized(DEFAULT_SIZE);

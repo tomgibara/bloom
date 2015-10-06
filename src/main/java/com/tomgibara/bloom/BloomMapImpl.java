@@ -17,6 +17,7 @@
 package com.tomgibara.bloom;
 
 import com.tomgibara.algebra.lattice.Lattice;
+import com.tomgibara.algebra.poset.PartialOrder.Comparison;
 import com.tomgibara.bits.AbstractBitStore;
 import com.tomgibara.bits.BitStore;
 import com.tomgibara.bits.BitStore.Positions;
@@ -33,7 +34,8 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 	private final Store<V> values;
 	private final Store<V> accessValues;
 	private MapBloomSet bloomSet = null;
-
+	private KeySet keys = null;
+	
 	BloomMapImpl(BloomConfig<K> config, Store<V> values, Lattice<V> lattice) {
 		this.config = config;
 		this.values = values;
@@ -152,6 +154,11 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 	@Override
 	public BloomSet<K> asBloomSet() {
 		return bloomSet == null ? bloomSet = new MapBloomSet() : bloomSet;
+	}
+
+	@Override
+	public BloomSet<K> keys() {
+		return keys == null ? keys = new KeySet() : keys;
 	}
 
 	@Override
@@ -289,7 +296,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 				}
 
 			};
-			publicBits = bits.immutable();
+			publicBits = bits.immutableView();
 		}
 		
 		@Override
@@ -331,6 +338,51 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 		@Override
 		public boolean isMutable() {
 			return BloomMapImpl.this.isMutable();
+		}
+	}
+
+	private class KeySet extends AbstractBloomSet<K> implements Cloneable {
+
+		final BitStore bits;
+		final BitStore publicBits;
+		//cached values
+		final V bottom;
+
+		KeySet() {
+			bottom = accessLattice.getBottom();
+			bits = new AbstractBitStore() {
+
+				@Override
+				public int size() {
+					return values.count();
+				}
+
+				@Override
+				public boolean getBit(int index) {
+					Comparison c = storeLattice.compare(bottom, values.get(index));
+					switch (c) {
+					case ORDERED:
+					case EQUAL:
+						return false;
+					case DISORDERED:
+						return true;
+					default:
+						throw new IllegalStateException();
+					}
+				}
+
+			};
+			publicBits = bits.immutableView();
+		}
+
+		@Override
+		public BitStore bits() {
+			return publicBits;
+		}
+
+		@Override
+		public BloomConfig<K> config() {
+			return config;
 		}
 	}
 

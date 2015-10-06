@@ -58,4 +58,6 @@ public interface BloomMap<K, V> extends Mutability<BloomMap<K, V>> {
 	//bit true if corresponding value attains top
 	BloomSet<K> asBloomSet();
 
+	// bit true if not mapped to bottom
+	BloomSet<K> keys();
 }
