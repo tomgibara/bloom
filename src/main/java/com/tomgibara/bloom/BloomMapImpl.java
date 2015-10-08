@@ -127,23 +127,6 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 		return true;
 	}
 
-//	@Override
-//	public BloomSet<K> boundedBy(BloomMap<K, V> that) {
-//		Bloom.checkCompatible(this, that);
-//		Store<V> thisValues = this.values();
-//		Store<V> thatValues = that.values();
-//		BitStore bits = new BitStore() {
-//			private final int size = thisValues.size();
-//			@Override public boolean getBit(int index) { return storeLattice.isOrdered(thatValues.get(index), thisValues.get(index)); }
-//			@Override public int size() { return size; }
-//		};
-//		return new BloomSet<K>() {
-//			private final BloomConfig<K> config = BloomMapImpl.this.config();
-//			@Override public BloomConfig<K> config() { return config; }
-//			@Override public BitStore bits() { return bits; }
-//		};
-//	}
-
 	@Override
 	public BloomMap<K, V> mappingTo(Lattice<V> subLattice) {
 		return subLattice.equals(accessLattice) ? this : new BloomMapImpl<K, V>(this, subLattice);
