@@ -49,14 +49,13 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 		storeLattice = that.storeLattice;
 		this.accessLattice = accessLattice;
 		config = that.config;
-		values = that.values.mutableCopy();
+		values = that.values;
 		accessValues = newAccessStore();
 	}
 	
 	private Store<V> newAccessStore() {
 		if (storeLattice.equals(accessLattice)) return values.immutableView();
-		V top = accessLattice.getTop();
-		return values.transformedBy(v -> storeLattice.meet(top, v));
+		return values.transformedBy(storeLattice.endomorphism(accessLattice));
 	}
 
 	public V put(K key, V value) {
@@ -72,7 +71,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 			values.set(hash, storeLattice.join(value, v));
 		}
 		//assumes putting has resulted in a change
-		return previous;
+		return storeLattice.join(previous, accessLattice.getBottom());
 	}
 	
 	public V getSupremum(K key) {
@@ -83,7 +82,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 			final V v = values.get(code.intValue());
 			value = storeLattice.meet(value, v);
 		}
-		return value;
+		return storeLattice.join(value, accessLattice.getBottom());
 	}
 
 	public boolean mightContain(K key) {
@@ -146,11 +145,9 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 //	}
 
 	@Override
-	public BloomMap<K,V> boundedAbove(V upperBound) {
-		final Lattice<V> subLattice = accessLattice.boundedAbove(upperBound);
+	public BloomMap<K, V> mappingTo(Lattice<V> subLattice) {
 		return subLattice.equals(accessLattice) ? this : new BloomMapImpl<K, V>(this, subLattice);
 	}
-	
 	@Override
 	public BloomSet<K> asBloomSet() {
 		return bloomSet == null ? bloomSet = new MapBloomSet() : bloomSet;

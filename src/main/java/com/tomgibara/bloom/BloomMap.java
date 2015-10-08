@@ -53,7 +53,7 @@ public interface BloomMap<K, V> extends Mutability<BloomMap<K, V>> {
 	//TODO understand how to implement this
 	//BloomSet<K> boundedBy(BloomMap<K, V> ca);
 	
-	BloomMap<K, V> boundedAbove(V upperBound);
+	BloomMap<K, V> mappingTo(Lattice<V> subLattice);
 	
 	//bit true if corresponding value attains top
 	BloomSet<K> asBloomSet();
