@@ -56,7 +56,7 @@ public interface BloomMap<K, V> extends Mutability<BloomMap<K, V>> {
 	BloomMap<K, V> mappingTo(Lattice<V> subLattice);
 	
 	//bit true if corresponding value attains top
-	BloomSet<K> asBloomSet();
+	BloomSet<K> topKeys();
 
 	// bit true if not mapped to bottom
 	BloomSet<K> keys();

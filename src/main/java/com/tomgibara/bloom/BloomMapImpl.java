@@ -149,7 +149,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 		return subLattice.equals(accessLattice) ? this : new BloomMapImpl<K, V>(this, subLattice);
 	}
 	@Override
-	public BloomSet<K> asBloomSet() {
+	public BloomSet<K> topKeys() {
 		return bloomSet == null ? bloomSet = new MapBloomSet() : bloomSet;
 	}
 
