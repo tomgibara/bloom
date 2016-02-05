@@ -22,7 +22,7 @@ import com.tomgibara.bits.AbstractBitStore;
 import com.tomgibara.bits.BitStore;
 import com.tomgibara.bits.BitStore.Positions;
 import com.tomgibara.bits.Operation;
-import com.tomgibara.collect.EquRel;
+import com.tomgibara.collect.Equivalence;
 import com.tomgibara.hashing.HashCode;
 import com.tomgibara.storage.Store;
 
@@ -55,7 +55,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 	
 	private Store<V> newAccessStore() {
 		if (storeLattice.equals(accessLattice)) return values.immutableView();
-		return values.transformedBy(storeLattice.endomorphism(accessLattice));
+		return values.asTransformedBy(storeLattice.endomorphism(accessLattice));
 	}
 
 	public V put(K key, V value) {
@@ -89,7 +89,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 		HashCode code = config.hasher().hash(key);
 		int hashCount = config.hashCount();
 		V bottom = storeLattice.getBottom();
-		EquRel<V> equality = storeLattice.equality();
+		Equivalence<V> equality = storeLattice.equality();
 		for (int i = 0; i < hashCount; i++) {
 			if (equality.isEquivalent(values.get(code.intValue()), bottom)) return false;
 		}
@@ -228,7 +228,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 	}
 
 	private boolean isAll(V v) {
-		EquRel<V> equality = storeLattice.equality();
+		Equivalence<V> equality = storeLattice.equality();
 		//TODO have stores implement iterable?
 		for (V value : values.asList()) {
 			if (!equality.isEquivalent(value, v)) return false;
@@ -266,7 +266,7 @@ class BloomMapImpl<K,V> implements BloomMap<K, V> {
 				}
 
 				@Override
-				public void clearWithZeros() {
+				public void clear() {
 					clear();
 				}
 

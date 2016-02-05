@@ -23,7 +23,7 @@ class BloomSetImpl<E> extends AbstractBloomSet<E> {
 
 	@Override
 	public void clear() {
-		bits.clearWithZeros();
+		bits.clear();
 	}
 
 	@Override

@@ -50,7 +50,7 @@ public final class Bloom<K> {
 	}
 
 	public BloomSet<K> newSet() {
-		BitStore bits = Bits.newBitStore(config.capacity());
+		BitStore bits = Bits.store(config.capacity());
 		return new BloomSetImpl<>(bits, config);
 	}
 
