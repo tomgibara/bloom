@@ -56,7 +56,7 @@ public final class Bloom<K> {
 
 	public <V> BloomMap<K, V> newMap(Store<V> values, Lattice<V> lattice) {
 		if (values == null) throw new IllegalArgumentException("null values");
-		if (values.isNullAllowed()) throw new IllegalArgumentException("null values possible");
+		if (!values.nullValue().isPresent()) throw new IllegalArgumentException("null values possible");
 		if (lattice == null) throw new IllegalArgumentException("null lattice");
 		if (!lattice.isBoundedBelow()) throw new IllegalArgumentException("lattice not bounded below");
 		return new BloomMapImpl<K, V>(config, values, lattice);
@@ -67,7 +67,7 @@ public final class Bloom<K> {
 		if (lattice == null) throw new IllegalArgumentException("null lattice");
 		if (!lattice.isBoundedBelow()) throw new IllegalArgumentException("lattice not bounded below");
 		Store<V> values = storage.newStore(config.capacity());
-		if (values.isNullAllowed()) throw new IllegalArgumentException("null values possible");
+		if (!values.nullValue().isPresent()) throw new IllegalArgumentException("null values possible");
 		return new BloomMapImpl<K, V>(config, values, lattice);
 	}
 

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -23,7 +22,7 @@ public class BloomMapImplTest extends TestCase {
 		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 		hasher = hasher.ints().sized(DEFAULT_SIZE);
 		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
-		BloomMap<Integer, Integer> ca = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, false), lattice);
+		BloomMap<Integer, Integer> ca = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, 0), lattice);
 		Random r = new Random(0L);
 		List<Integer> keys = new ArrayList<>();
 		List<Integer> values = new ArrayList<>();
@@ -40,7 +39,7 @@ public class BloomMapImplTest extends TestCase {
 		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 		hasher = hasher.ints().sized(DEFAULT_SIZE);
 		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
-		BloomMap<Integer, Integer> map = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, false), lattice);
+		BloomMap<Integer, Integer> map = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, 0), lattice);
 		BloomSet<Integer> keys = map.keys();
 		assertTrue(keys.isEmpty());
 		for (int i = 0; i < 30; i++) {
@@ -54,7 +53,7 @@ public class BloomMapImplTest extends TestCase {
 		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 		hasher = hasher.ints().sized(DEFAULT_SIZE);
 		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
-		BloomMap<Integer, Integer> map = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, false), lattice);
+		BloomMap<Integer, Integer> map = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, 0), lattice);
 		BloomMap<Integer, Integer> submap = map.mappingTo(lattice.bounded(1000, 100));
 		
 		try {
