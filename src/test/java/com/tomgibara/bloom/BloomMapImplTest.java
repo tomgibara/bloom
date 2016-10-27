@@ -13,16 +13,18 @@ import com.tomgibara.hashing.HashSize;
 import com.tomgibara.hashing.Hasher;
 import com.tomgibara.hashing.Hashing;
 import com.tomgibara.storage.Storage;
+import com.tomgibara.storage.StoreNullity;
 
 public class BloomMapImplTest extends TestCase {
 
 	static final HashSize DEFAULT_SIZE = HashSize.fromInt(1000);
+	static final StoreNullity<Integer> ZERO_NULL = StoreNullity.settingNullToValue(0);
 
 	public void testBasic() {
 		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 		hasher = hasher.ints().sized(DEFAULT_SIZE);
 		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
-		BloomMap<Integer, Integer> ca = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, 0), lattice);
+		BloomMap<Integer, Integer> ca = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, ZERO_NULL), lattice);
 		Random r = new Random(0L);
 		List<Integer> keys = new ArrayList<>();
 		List<Integer> values = new ArrayList<>();
@@ -39,7 +41,7 @@ public class BloomMapImplTest extends TestCase {
 		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 		hasher = hasher.ints().sized(DEFAULT_SIZE);
 		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
-		BloomMap<Integer, Integer> map = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, 0), lattice);
+		BloomMap<Integer, Integer> map = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, ZERO_NULL), lattice);
 		BloomSet<Integer> keys = map.keys();
 		assertTrue(keys.isEmpty());
 		for (int i = 0; i < 30; i++) {
@@ -53,7 +55,7 @@ public class BloomMapImplTest extends TestCase {
 		Hasher<Integer> hasher = Hashing.murmur3Int().hasher((i, w) -> w.writeInt(i));
 		hasher = hasher.ints().sized(DEFAULT_SIZE);
 		OrderedLattice<Integer> lattice = new OrderedLattice<>(10000, 0);
-		BloomMap<Integer, Integer> map = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, 0), lattice);
+		BloomMap<Integer, Integer> map = Bloom.withHasher(hasher, 10).newMap(Storage.typed(int.class, ZERO_NULL), lattice);
 		BloomMap<Integer, Integer> submap = map.mappingTo(lattice.bounded(1000, 100));
 		
 		try {
